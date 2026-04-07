@@ -3932,3 +3932,75 @@ body::after {
     height: 78px;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   Actual Seam Kill
+   Remove the old sidebar inset/shadow separator and simplify settings further
+   ═══════════════════════════════════════════════════════════════ */
+
+.sidebar {
+  margin-right: -1px;
+  padding: 14px 10px 10px 10px !important;
+  background-image:
+    linear-gradient(180deg, rgba(11, 18, 29, 0.82) 0%, rgba(9, 16, 27, 0.96) 100%),
+    var(--panel-bg-image) !important;
+  background-size: auto, cover !important;
+  background-position: center, center !important;
+  background-repeat: no-repeat, no-repeat !important;
+  box-shadow: none !important;
+}
+
+.sidebar::before {
+  display: none !important;
+}
+
+[data-theme="light"] .sidebar {
+  background-image:
+    linear-gradient(180deg, rgba(249, 252, 255, 0.84) 0%, rgba(239, 244, 251, 0.96) 100%),
+    var(--panel-bg-image) !important;
+}
+
+.main-content {
+  border-left: none !important;
+  box-shadow: none !important;
+}
+
+.main-header {
+  padding-top: 20px;
+}
+
+.settings-body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.settings-group {
+  padding: 0 0 16px;
+  background: transparent !important;
+  border: none !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 0;
+}
+
+.settings-group:last-child {
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+[data-theme="light"] .settings-group {
+  border-bottom-color: rgba(125, 145, 170, 0.14);
+}
+
+.settings-group-title {
+  margin-bottom: 14px;
+}
+
+.settings-media-card {
+  background: rgba(255, 255, 255, 0.018) !important;
+  border-radius: 18px;
+}
+
+[data-theme="light"] .settings-media-card {
+  background: rgba(255, 255, 255, 0.48) !important;
+}
