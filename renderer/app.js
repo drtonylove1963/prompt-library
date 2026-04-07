@@ -33,6 +33,12 @@ let editingPromptId = null;
 let contextFolderId = null;
 let modalImages = []; // { filename, dataUrl }
 let currentSort = 'newest';
+let appSettings = {
+    theme: 'dark',
+    shortcut: 'CommandOrControl+Shift+S',
+    sidebar_background: '',
+    main_background: '',
+};
 
 // ─── DOM References ────────────────────────────────────────────
 const $ = (sel) => document.querySelector(sel);
@@ -62,6 +68,7 @@ const lightboxOverlay = $('#lightboxOverlay');
 const lightboxImg = $('#lightboxImg');
 const lightboxClose = $('#lightboxClose');
 const sidebar = $('#sidebar');
+const mainContent = $('#mainContent');
 const sidebarCollapseBtn = $('#sidebarCollapseBtn');
 const sidebarExpandBtn = $('#sidebarExpandBtn');
 const confirmOverlay = $('#confirmOverlay');
@@ -73,6 +80,14 @@ const sortMenu = $('#sortMenu');
 const sortBtn = $('#sortBtn');
 const charCount = $('#charCount');
 const charCounter = $('#charCounter');
+const sidebarBgPreview = $('#sidebarBgPreview');
+const sidebarBgStatus = $('#sidebarBgStatus');
+const sidebarBgUploadBtn = $('#sidebarBgUploadBtn');
+const sidebarBgClearBtn = $('#sidebarBgClearBtn');
+const mainBgPreview = $('#mainBgPreview');
+const mainBgStatus = $('#mainBgStatus');
+const mainBgUploadBtn = $('#mainBgUploadBtn');
+const mainBgClearBtn = $('#mainBgClearBtn');
 
 // ─── Helpers ───────────────────────────────────────────────────
 function escapeHtml(str) {
@@ -106,6 +121,58 @@ function showToast(message = 'Copied to clipboard!') {
     toastMessage.textContent = message;
     toast.classList.add('visible');
     setTimeout(() => toast.classList.remove('visible'), 2200);
+}
+
+function escapeCssUrl(url) {
+    return String(url || '').replace(/"/g, '\\"');
+}
+
+async function resolveStoredImageUrl(filename) {
+    if (!filename) return '';
+    const path = await invoke('get_image_path', { filename });
+    return path ? filePathToUrl(path) : '';
+}
+
+function applyPanelBackground(element, imageUrl) {
+    element.style.setProperty('--panel-bg-image', imageUrl ? `url("${escapeCssUrl(imageUrl)}")` : 'none');
+}
+
+function updateBackgroundPreview(previewEl, statusEl, clearBtn, imageUrl, hasImage, areaLabel) {
+    previewEl.style.setProperty('--preview-image', imageUrl ? `url("${escapeCssUrl(imageUrl)}")` : 'none');
+    previewEl.classList.toggle('is-empty', !hasImage);
+
+    const label = previewEl.querySelector('span');
+    if (label) {
+        label.textContent = hasImage ? 'Custom image' : 'No image';
+    }
+
+    statusEl.textContent = hasImage ? `${areaLabel} background active` : 'No image selected';
+    clearBtn.disabled = !hasImage;
+}
+
+async function applyWorkspaceBackgrounds(settings = appSettings) {
+    const [sidebarUrl, mainUrl] = await Promise.all([
+        resolveStoredImageUrl(settings.sidebar_background),
+        resolveStoredImageUrl(settings.main_background),
+    ]);
+
+    applyPanelBackground(sidebar, sidebarUrl);
+    applyPanelBackground(mainContent, mainUrl);
+
+    updateBackgroundPreview(sidebarBgPreview, sidebarBgStatus, sidebarBgClearBtn, sidebarUrl, !!settings.sidebar_background, 'Left');
+    updateBackgroundPreview(mainBgPreview, mainBgStatus, mainBgClearBtn, mainUrl, !!settings.main_background, 'Right');
+}
+
+async function hydrateSettings(settings) {
+    if (!settings) return;
+    appSettings = { ...appSettings, ...settings };
+    document.documentElement.setAttribute('data-theme', appSettings.theme || 'dark');
+
+    if (typeof shortcutDisplay !== 'undefined' && shortcutDisplay) {
+        shortcutDisplay.textContent = appSettings.shortcut || 'CommandOrControl+Shift+S';
+    }
+
+    await applyWorkspaceBackgrounds(appSettings);
 }
 
 // ─── Confirmation Dialog ───────────────────────────────────────
@@ -784,6 +851,7 @@ $('#themeToggle').addEventListener('click', async () => {
     const current = html.getAttribute('data-theme');
     const next = current === 'dark' ? 'light' : 'dark';
     html.setAttribute('data-theme', next);
+    appSettings.theme = next;
     await invoke('set_theme', { theme: next });
 });
 
@@ -801,10 +869,7 @@ let isRecording = false;
 let recordedShortcut = '';
 
 $('#settingsBtn').addEventListener('click', async () => {
-    const settings = await invoke('get_settings');
-    if (settings) {
-        shortcutDisplay.textContent = settings.shortcut || 'CommandOrControl+Shift+S';
-    }
+    await hydrateSettings(await invoke('get_settings'));
     settingsOverlay.classList.add('active');
 });
 
@@ -836,12 +901,37 @@ $('#recorderSave').addEventListener('click', async () => {
     try {
         await invoke('set_shortcut', { shortcut: recordedShortcut });
         shortcutDisplay.textContent = recordedShortcut;
+        appSettings.shortcut = recordedShortcut;
         showToast('Shortcut updated!');
     } catch (e) {
         showToast('Invalid shortcut: ' + e);
     }
     stopRecording();
 });
+
+async function updateBackgroundSetting(area, filename) {
+    const settings = await invoke('set_background_image', { area, filename });
+    await hydrateSettings(settings);
+}
+
+async function pickWorkspaceBackground(area) {
+    const result = await invoke('select_images');
+    const image = Array.isArray(result) ? result[0] : null;
+    if (!image || !image.filename) return;
+
+    await updateBackgroundSetting(area, image.filename);
+    showToast(area === 'sidebar' ? 'Left background updated!' : 'Right background updated!');
+}
+
+async function clearWorkspaceBackground(area) {
+    await updateBackgroundSetting(area, '');
+    showToast(area === 'sidebar' ? 'Left background removed!' : 'Right background removed!');
+}
+
+sidebarBgUploadBtn.addEventListener('click', () => pickWorkspaceBackground('sidebar'));
+mainBgUploadBtn.addEventListener('click', () => pickWorkspaceBackground('main'));
+sidebarBgClearBtn.addEventListener('click', () => clearWorkspaceBackground('sidebar'));
+mainBgClearBtn.addEventListener('click', () => clearWorkspaceBackground('main'));
 
 function stopRecording() {
     isRecording = false;
@@ -946,8 +1036,7 @@ document.addEventListener('keydown', (e) => {
 // ─── Init ──────────────────────────────────────────────────────
 async function init() {
     folders = await invoke('get_folders');
-    const settings = await invoke('get_settings');
-    document.documentElement.setAttribute('data-theme', settings?.theme || 'dark');
+    await hydrateSettings(await invoke('get_settings'));
 
     if (folders.length > 0) {
         activeFolderId = folders[0].id;

@@ -39,6 +39,10 @@ pub struct AppData {
     pub theme: String,
     #[serde(default = "default_shortcut")]
     pub shortcut: String,
+    #[serde(default)]
+    pub sidebar_background: String,
+    #[serde(default)]
+    pub main_background: String,
 }
 
 fn default_shortcut() -> String {
@@ -91,6 +95,8 @@ impl Default for AppData {
             ],
             theme: "dark".into(),
             shortcut: default_shortcut(),
+            sidebar_background: String::new(),
+            main_background: String::new(),
         }
     }
 }
@@ -476,15 +482,23 @@ fn set_theme(state: State<'_, AppState>, theme: String) -> String {
 pub struct Settings {
     pub shortcut: String,
     pub theme: String,
+    pub sidebar_background: String,
+    pub main_background: String,
+}
+
+fn snapshot_settings(data: &AppData) -> Settings {
+    Settings {
+        shortcut: data.shortcut.clone(),
+        theme: data.theme.clone(),
+        sidebar_background: data.sidebar_background.clone(),
+        main_background: data.main_background.clone(),
+    }
 }
 
 #[tauri::command]
 fn get_settings(state: State<'_, AppState>) -> Settings {
     let data = state.data.lock().unwrap();
-    Settings {
-        shortcut: data.shortcut.clone(),
-        theme: data.theme.clone(),
-    }
+    snapshot_settings(&data)
 }
 
 #[tauri::command]
@@ -510,6 +524,21 @@ fn set_shortcut(state: State<'_, AppState>, app: AppHandle, shortcut: String) ->
     state.data.lock().unwrap().shortcut = shortcut;
     state.save();
     Ok(())
+}
+
+#[tauri::command]
+fn set_background_image(state: State<'_, AppState>, area: String, filename: String) -> Settings {
+    let settings = {
+        let mut data = state.data.lock().unwrap();
+        match area.as_str() {
+            "sidebar" => data.sidebar_background = filename,
+            "main" => data.main_background = filename,
+            _ => {}
+        }
+        snapshot_settings(&data)
+    };
+    state.save();
+    settings
 }
 
 #[tauri::command]
@@ -748,6 +777,7 @@ pub fn run() {
             set_theme,
             get_settings,
             set_shortcut,
+            set_background_image,
             close_quicksave,
             window_minimize,
             window_maximize,
