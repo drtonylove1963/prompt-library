@@ -12,6 +12,7 @@
 <p align="center">
   <img src="https://img.shields.io/badge/platform-Windows%20%7C%20macOS-blue?style=flat-square" alt="Platform" />
   <img src="https://img.shields.io/badge/license-MIT-green?style=flat-square" alt="License" />
+  <a href="https://github.com/sponsors/Leonxlnx"><img src="https://img.shields.io/badge/GitHub%20Sponsors-support%20the%20project-ec4899?style=flat-square" alt="GitHub Sponsors" /></a>
 </p>
 
 ---
@@ -120,6 +121,10 @@ See [ROADMAP.md](ROADMAP.md).
 3. Commit (`git commit -m 'add your feature'`)
 4. Push (`git push origin feature/your-feature`)
 5. Open a PR
+
+## Support
+
+If Prompt Library helps your workflow, you can support ongoing development on [GitHub Sponsors](https://github.com/sponsors/Leonxlnx).
 
 ## License
 
