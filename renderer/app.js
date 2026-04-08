@@ -1036,12 +1036,12 @@ async function saveSettingsChanges() {
 
     try {
         const payload = {
-            glass_mode: settingsDraft.glass_mode,
-            surface_opacity: settingsDraft.surface_opacity,
-            card_opacity: settingsDraft.card_opacity,
-            glass_blur: settingsDraft.glass_blur,
-            background_visibility: settingsDraft.background_visibility,
-            background_filename: pendingWorkspaceBackground,
+            glassMode: settingsDraft.glass_mode,
+            surfaceOpacity: settingsDraft.surface_opacity,
+            cardOpacity: settingsDraft.card_opacity,
+            glassBlur: settingsDraft.glass_blur,
+            backgroundVisibility: settingsDraft.background_visibility,
+            backgroundFilename: pendingWorkspaceBackground,
         };
 
         let settings = await invoke('set_appearance_settings', payload);
