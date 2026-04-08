@@ -44,6 +44,9 @@ let appSettings = {
     glass_blur: 18,
     background_visibility: 0.12,
 };
+let settingsDraft = null;
+let settingsDirty = false;
+let pendingWorkspaceBackground = '';
 
 // ─── DOM References ────────────────────────────────────────────
 const $ = (sel) => document.querySelector(sel);
@@ -153,6 +156,10 @@ async function resolveStoredImageUrl(filename) {
     return path ? filePathToUrl(path) : '';
 }
 
+function getWorkspaceBackgroundFilename(settings = appSettings) {
+    return settings?.main_background || settings?.sidebar_background || '';
+}
+
 function applyWorkspaceBackground(imageUrl) {
     const backgroundValue = imageUrl ? `url("${escapeCssUrl(imageUrl)}")` : 'none';
     document.body.style.setProperty('--workspace-bg-image', backgroundValue);
@@ -173,8 +180,7 @@ function updateBackgroundPreview(previewEl, statusEl, clearBtn, imageUrl, hasIma
     clearBtn.disabled = !hasImage;
 }
 
-async function applyWorkspaceBackgrounds(settings = appSettings) {
-    const backgroundFilename = settings.main_background || settings.sidebar_background || '';
+async function previewWorkspaceBackground(backgroundFilename) {
     const backgroundUrl = await resolveStoredImageUrl(backgroundFilename);
 
     applyWorkspaceBackground(backgroundUrl);
@@ -187,6 +193,10 @@ async function applyWorkspaceBackgrounds(settings = appSettings) {
         !!backgroundFilename,
         'Window'
     );
+}
+
+async function applyWorkspaceBackgrounds(settings = appSettings) {
+    await previewWorkspaceBackground(getWorkspaceBackgroundFilename(settings));
 }
 
 function syncGlassControls(settings = appSettings) {
@@ -224,8 +234,8 @@ function applyGlassSettings(settings = appSettings) {
     document.documentElement.style.setProperty('--glass-blur-strength', `${glassBlur}px`);
     document.documentElement.style.setProperty('--background-image-strength', backgroundVisibility.toFixed(2));
 
-    appSettings = {
-        ...appSettings,
+    const normalizedSettings = {
+        ...settings,
         glass_mode: glassMode,
         surface_opacity: surfaceOpacity,
         card_opacity: cardOpacity,
@@ -233,7 +243,8 @@ function applyGlassSettings(settings = appSettings) {
         background_visibility: backgroundVisibility,
     };
 
-    syncGlassControls(appSettings);
+    syncGlassControls(normalizedSettings);
+    return normalizedSettings;
 }
 
 function collectGlassSettingsFromControls() {
@@ -256,7 +267,7 @@ async function hydrateSettings(settings) {
         shortcutDisplay.textContent = appSettings.shortcut || 'CommandOrControl+Shift+S';
     }
 
-    applyGlassSettings(appSettings);
+    appSettings = applyGlassSettings(appSettings);
     await applyWorkspaceBackgrounds(appSettings);
 }
 
@@ -968,26 +979,115 @@ $('#winClose').addEventListener('click', () => invoke('window_close'));
 
 // ─── Settings Panel ─────────────────────────────────────────────
 const settingsOverlay = $('#settingsOverlay');
+const settingsSaveBtn = $('#settingsSaveBtn');
+const settingsCancelBtn = $('#settingsCancelBtn');
+const settingsSaveState = $('#settingsSaveState');
 const shortcutDisplay = $('#shortcutDisplay');
 const shortcutRecorder = $('#shortcutRecorder');
 const recorderKeys = $('#recorderKeys');
 let isRecording = false;
 let recordedShortcut = '';
 
+function updateSettingsSaveState() {
+    if (!settingsSaveBtn || !settingsCancelBtn || !settingsSaveState) return;
+    settingsSaveBtn.disabled = !settingsDirty;
+    settingsCancelBtn.disabled = false;
+    settingsSaveState.textContent = settingsDirty
+        ? 'Unsaved appearance changes'
+        : 'Appearance matches your saved setup';
+}
+
+function setSettingsDirty(dirty) {
+    settingsDirty = dirty;
+    updateSettingsSaveState();
+}
+
+function startSettingsDraft() {
+    settingsDraft = { ...appSettings };
+    pendingWorkspaceBackground = getWorkspaceBackgroundFilename(appSettings);
+    applyGlassSettings(settingsDraft);
+    previewWorkspaceBackground(pendingWorkspaceBackground).catch((error) => {
+        console.error('Failed to preview workspace background:', error);
+    });
+    setSettingsDirty(false);
+}
+
+async function closeSettingsPanel({ revert = true } = {}) {
+    settingsOverlay.classList.remove('active');
+    stopRecording();
+    if (revert) {
+        await hydrateSettings(appSettings);
+    }
+    settingsDraft = null;
+    pendingWorkspaceBackground = '';
+    setSettingsDirty(false);
+}
+
+async function saveSettingsChanges() {
+    if (!settingsDraft) return;
+    if (!settingsDirty) {
+        await closeSettingsPanel({ revert: false });
+        return;
+    }
+
+    settingsSaveBtn.disabled = true;
+    settingsCancelBtn.disabled = true;
+    settingsSaveState.textContent = 'Saving appearance...';
+
+    try {
+        const glassPayload = {
+            glass_mode: settingsDraft.glass_mode,
+            surface_opacity: settingsDraft.surface_opacity,
+            card_opacity: settingsDraft.card_opacity,
+            glass_blur: settingsDraft.glass_blur,
+            background_visibility: settingsDraft.background_visibility,
+        };
+
+        let settings = await invoke('set_glass_settings', glassPayload);
+        const savedBackground = getWorkspaceBackgroundFilename(settings || appSettings);
+        const nextBackground = pendingWorkspaceBackground;
+
+        if (savedBackground !== nextBackground) {
+            await invoke('set_background_image', { area: 'main', filename: nextBackground });
+            settings = await invoke('set_background_image', { area: 'sidebar', filename: nextBackground });
+        }
+
+        if (!settings) {
+            settings = await invoke('get_settings');
+        }
+
+        await hydrateSettings(settings);
+        await closeSettingsPanel({ revert: false });
+        showToast('Appearance saved!');
+    } catch (error) {
+        console.error('Failed to save settings:', error);
+        settingsSaveState.textContent = 'Could not save right now';
+        settingsCancelBtn.disabled = false;
+        settingsSaveBtn.disabled = false;
+    }
+}
+
 $('#settingsBtn').addEventListener('click', async () => {
     await hydrateSettings(await invoke('get_settings'));
+    startSettingsDraft();
     settingsOverlay.classList.add('active');
 });
 
-$('#settingsClose').addEventListener('click', () => {
-    settingsOverlay.classList.remove('active');
-    stopRecording();
+$('#settingsClose').addEventListener('click', async () => {
+    await closeSettingsPanel();
 });
 
-settingsOverlay.addEventListener('click', (e) => {
+settingsCancelBtn?.addEventListener('click', async () => {
+    await closeSettingsPanel();
+});
+
+settingsSaveBtn?.addEventListener('click', async () => {
+    await saveSettingsChanges();
+});
+
+settingsOverlay.addEventListener('click', async (e) => {
     if (e.target === settingsOverlay) {
-        settingsOverlay.classList.remove('active');
-        stopRecording();
+        await closeSettingsPanel();
     }
 });
 
@@ -1015,48 +1115,46 @@ $('#recorderSave').addEventListener('click', async () => {
     stopRecording();
 });
 
-async function updateWorkspaceBackground(filename) {
-    await invoke('set_background_image', { area: 'main', filename });
-    const settings = await invoke('set_background_image', { area: 'sidebar', filename });
-    await hydrateSettings(settings);
-}
-
 async function pickWorkspaceBackground() {
     const result = await invoke('select_images');
     const image = Array.isArray(result) ? result[0] : null;
     if (!image || !image.filename) return;
 
-    await updateWorkspaceBackground(image.filename);
-    showToast('Background updated!');
+    if (!settingsDraft) settingsDraft = { ...appSettings };
+    pendingWorkspaceBackground = image.filename;
+    settingsDraft = {
+        ...settingsDraft,
+        main_background: image.filename,
+        sidebar_background: image.filename,
+    };
+    await previewWorkspaceBackground(image.filename);
+    setSettingsDirty(true);
 }
 
 async function clearWorkspaceBackground() {
-    await updateWorkspaceBackground('');
-    showToast('Background removed!');
+    if (!settingsDraft) settingsDraft = { ...appSettings };
+    pendingWorkspaceBackground = '';
+    settingsDraft = {
+        ...settingsDraft,
+        main_background: '',
+        sidebar_background: '',
+    };
+    await previewWorkspaceBackground('');
+    setSettingsDirty(true);
 }
 
 workspaceBgUploadBtn?.addEventListener('click', () => pickWorkspaceBackground());
 workspaceBgClearBtn?.addEventListener('click', () => clearWorkspaceBackground());
 
-let glassSettingsSaveTimer = null;
-
-async function persistGlassSettings() {
-    const payload = collectGlassSettingsFromControls();
-    const settings = await invoke('set_glass_settings', payload);
-    if (settings) {
-        appSettings = { ...appSettings, ...settings };
-        applyGlassSettings(appSettings);
-    }
-}
-
 function previewGlassSettings() {
+    if (!settingsDraft) settingsDraft = { ...appSettings };
     const payload = collectGlassSettingsFromControls();
-    appSettings = { ...appSettings, ...payload };
-    applyGlassSettings(appSettings);
-    clearTimeout(glassSettingsSaveTimer);
-    glassSettingsSaveTimer = setTimeout(() => {
-        persistGlassSettings().catch((error) => console.error('Failed to save glass settings:', error));
-    }, 140);
+    settingsDraft = {
+        ...settingsDraft,
+        ...payload,
+    };
+    settingsDraft = applyGlassSettings(settingsDraft);
+    setSettingsDirty(true);
 }
 
 glassStyleOptions.forEach((option) => {

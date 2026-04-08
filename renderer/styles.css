@@ -6257,3 +6257,197 @@ body.has-workspace-image .main-content {
 .settings-media-note {
   line-height: 1.45 !important;
 }
+
+/*
+Final Settings + Shell Stability
+*/
+
+:root {
+  --chrome-height: 54px !important;
+}
+
+.titlebar {
+  min-height: var(--chrome-height) !important;
+  height: var(--chrome-height) !important;
+  padding: 0 12px 0 18px !important;
+}
+
+.titlebar-brand {
+  gap: 12px !important;
+}
+
+.titlebar-logo-shell {
+  width: 30px !important;
+  height: 30px !important;
+}
+
+.titlebar-title {
+  font-size: 14px !important;
+}
+
+.titlebar-actions {
+  gap: 10px !important;
+}
+
+.app-layout {
+  padding-top: calc(var(--chrome-height) + 12px) !important;
+}
+
+.sidebar,
+.main-content {
+  transition:
+    width 380ms cubic-bezier(0.22, 1, 0.36, 1),
+    min-width 380ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 380ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 240ms ease,
+    box-shadow 240ms ease,
+    background 240ms ease !important;
+}
+
+.app-layout.sidebar-collapsed {
+  gap: 10px !important;
+  padding-left: 10px !important;
+}
+
+.sidebar.collapsed {
+  transform: translateX(-10px) scale(0.994) !important;
+}
+
+.sidebar.is-revealing .sidebar-header {
+  animation: sidebarSoftIn 300ms cubic-bezier(0.22, 1, 0.36, 1) both !important;
+}
+
+.sidebar.is-revealing .folder-item {
+  animation: sidebarSoftIn 360ms cubic-bezier(0.22, 1, 0.36, 1) both !important;
+  animation-delay: calc(var(--stagger, 1) * 26ms) !important;
+}
+
+.sidebar.is-revealing .sidebar-footer {
+  animation: sidebarSoftIn 320ms cubic-bezier(0.22, 1, 0.36, 1) both !important;
+  animation-delay: 110ms !important;
+}
+
+.main-header {
+  padding: 18px 24px 14px 20px !important;
+}
+
+.main-header-left {
+  justify-content: flex-start !important;
+  gap: 10px !important;
+}
+
+.folder-title {
+  font-size: clamp(22px, 1.7vw, 28px) !important;
+  letter-spacing: -0.04em !important;
+}
+
+.sidebar::before,
+.main-content::before {
+  content: "" !important;
+  position: absolute !important;
+  left: 18px !important;
+  right: 18px !important;
+  top: 0 !important;
+  height: 1px !important;
+  display: block !important;
+  pointer-events: none !important;
+  z-index: 1 !important;
+}
+
+.sidebar::before {
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.04)) !important;
+}
+
+.main-content::before {
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.03) 58%, rgba(255, 255, 255, 0.1)) !important;
+}
+
+[data-theme="light"] .sidebar::before {
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.44)) !important;
+}
+
+[data-theme="light"] .main-content::before {
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.94), rgba(255, 255, 255, 0.32) 58%, rgba(255, 255, 255, 0.78)) !important;
+}
+
+.segmented-option {
+  position: relative !important;
+  overflow: hidden !important;
+  isolation: isolate !important;
+}
+
+.settings-panel {
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+  padding: 0 !important;
+}
+
+.settings-header {
+  flex: none !important;
+  padding: 22px 24px 16px !important;
+}
+
+.settings-body {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  overflow-y: auto !important;
+  padding: 0 24px 20px !important;
+  scrollbar-gutter: stable both-edges !important;
+}
+
+.settings-body::-webkit-scrollbar {
+  width: 10px !important;
+}
+
+.settings-body::-webkit-scrollbar-track {
+  background: transparent !important;
+}
+
+.settings-body::-webkit-scrollbar-thumb {
+  background: rgba(117, 150, 189, 0.3) !important;
+  border: 2px solid transparent !important;
+  border-radius: 999px !important;
+  background-clip: padding-box !important;
+}
+
+[data-theme="light"] .settings-body::-webkit-scrollbar-thumb {
+  background: rgba(118, 142, 176, 0.28) !important;
+  background-clip: padding-box !important;
+}
+
+.settings-footer {
+  flex: none !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 16px !important;
+  padding: 16px 24px 22px !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
+  background: linear-gradient(180deg, rgba(14, 22, 35, 0.18) 0%, rgba(14, 22, 35, 0.34) 100%) !important;
+}
+
+[data-theme="light"] .settings-footer {
+  border-top-color: rgba(122, 146, 180, 0.12) !important;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.3) 0%, rgba(244, 248, 252, 0.78) 100%) !important;
+}
+
+.settings-footer-note {
+  font-size: 12px !important;
+  color: var(--text-secondary) !important;
+}
+
+.settings-footer-actions {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+}
+
+.settings-action-btn {
+  min-width: 124px !important;
+}
+
+.settings-action-btn:disabled {
+  opacity: 0.5 !important;
+  cursor: not-allowed !important;
+}

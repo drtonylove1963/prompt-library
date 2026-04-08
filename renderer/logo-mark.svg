@@ -1,16 +1,13 @@
 <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <linearGradient id="logoStroke" x1="23" y1="12" x2="46" y2="52" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#BFE1FF"/>
-      <stop offset="0.46" stop-color="#85BDF5"/>
-      <stop offset="1" stop-color="#4E90D4"/>
+    <linearGradient id="logoFill" x1="23" y1="12" x2="50" y2="52" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#CDE7FF"/>
+      <stop offset="0.42" stop-color="#89C0F7"/>
+      <stop offset="1" stop-color="#4F91D4"/>
     </linearGradient>
   </defs>
   <path
-    d="M23 51V13H35.6C43.38 13 48.5 18.11 48.5 25.44C48.5 32.69 43.47 37.88 35.82 37.88H23"
-    stroke="url(#logoStroke)"
-    stroke-width="8"
-    stroke-linecap="round"
-    stroke-linejoin="round"
+    d="M22 52V12H36.4C45.44 12 51.5 17.98 51.5 26.12C51.5 34.24 45.38 40.08 36.5 40.08H30.18V52H22ZM30.18 33.28H35.84C40.28 33.28 43.18 30.42 43.18 26.12C43.18 21.74 40.28 18.8 35.84 18.8H30.18V33.28Z"
+    fill="url(#logoFill)"
   />
 </svg>
