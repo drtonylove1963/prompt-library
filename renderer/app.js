@@ -1035,23 +1035,16 @@ async function saveSettingsChanges() {
     settingsSaveState.textContent = 'Saving appearance...';
 
     try {
-        const glassPayload = {
+        const payload = {
             glass_mode: settingsDraft.glass_mode,
             surface_opacity: settingsDraft.surface_opacity,
             card_opacity: settingsDraft.card_opacity,
             glass_blur: settingsDraft.glass_blur,
             background_visibility: settingsDraft.background_visibility,
+            background_filename: pendingWorkspaceBackground,
         };
 
-        let settings = await invoke('set_glass_settings', glassPayload);
-        const savedBackground = getWorkspaceBackgroundFilename(settings || appSettings);
-        const nextBackground = pendingWorkspaceBackground;
-
-        if (savedBackground !== nextBackground) {
-            await invoke('set_background_image', { area: 'main', filename: nextBackground });
-            settings = await invoke('set_background_image', { area: 'sidebar', filename: nextBackground });
-        }
-
+        let settings = await invoke('set_appearance_settings', payload);
         if (!settings) {
             settings = await invoke('get_settings');
         }
@@ -1061,7 +1054,8 @@ async function saveSettingsChanges() {
         showToast('Appearance saved!');
     } catch (error) {
         console.error('Failed to save settings:', error);
-        settingsSaveState.textContent = 'Could not save right now';
+        const errorText = String(error || 'Unknown error').replace(/^Error:\s*/, '');
+        settingsSaveState.textContent = `Save failed: ${errorText}`;
         settingsCancelBtn.disabled = false;
         settingsSaveBtn.disabled = false;
     }

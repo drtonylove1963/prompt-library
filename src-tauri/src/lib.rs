@@ -612,6 +612,34 @@ fn set_glass_settings(
 }
 
 #[tauri::command]
+fn set_appearance_settings(
+    state: State<'_, AppState>,
+    glass_mode: String,
+    surface_opacity: f32,
+    card_opacity: f32,
+    glass_blur: f32,
+    background_visibility: f32,
+    background_filename: String,
+) -> Settings {
+    let settings = {
+        let mut data = state.data.lock().unwrap();
+        data.glass_mode = match glass_mode.as_str() {
+            "classic" => "classic".into(),
+            _ => "apple".into(),
+        };
+        data.surface_opacity = surface_opacity.clamp(0.68, 0.98);
+        data.card_opacity = card_opacity.clamp(0.64, 0.96);
+        data.glass_blur = glass_blur.clamp(0.0, 30.0);
+        data.background_visibility = background_visibility.clamp(0.0, 0.28);
+        data.main_background = background_filename.clone();
+        data.sidebar_background = background_filename;
+        snapshot_settings(&data)
+    };
+    state.save();
+    settings
+}
+
+#[tauri::command]
 fn close_quicksave(app: AppHandle) {
     // Notify the main window to refresh its data
     let _ = app.emit("folders-changed", ());
@@ -868,6 +896,7 @@ pub fn run() {
             set_shortcut,
             set_background_image,
             set_glass_settings,
+            set_appearance_settings,
             close_quicksave,
             window_minimize,
             window_maximize,
