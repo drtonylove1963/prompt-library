@@ -85,6 +85,8 @@ const workspaceBgPreview = $('#workspaceBgPreview');
 const workspaceBgStatus = $('#workspaceBgStatus');
 const workspaceBgUploadBtn = $('#workspaceBgUploadBtn');
 const workspaceBgClearBtn = $('#workspaceBgClearBtn');
+const themeTransitionLayer = $('#themeTransitionLayer');
+const themeToggleBtn = $('#themeToggle');
 
 // ─── Helpers ───────────────────────────────────────────────────
 function escapeHtml(str) {
@@ -153,6 +155,7 @@ async function applyWorkspaceBackgrounds(settings = appSettings) {
     const backgroundUrl = await resolveStoredImageUrl(backgroundFilename);
 
     applyWorkspaceBackground(backgroundUrl);
+    document.body.classList.toggle('has-workspace-image', !!backgroundFilename);
     updateBackgroundPreview(
         workspaceBgPreview,
         workspaceBgStatus,
@@ -857,13 +860,8 @@ searchInput.addEventListener('input', () => {
 });
 
 // Theme toggle
-$('#themeToggle').addEventListener('click', async () => {
-    const html = document.documentElement;
-    const current = html.getAttribute('data-theme');
-    const next = current === 'dark' ? 'light' : 'dark';
-    html.setAttribute('data-theme', next);
-    appSettings.theme = next;
-    await invoke('set_theme', { theme: next });
+themeToggleBtn?.addEventListener('click', () => {
+    toggleThemeWithReveal(themeToggleBtn);
 });
 
 // Window controls
@@ -955,6 +953,7 @@ const rippleSelector = [
     '.btn-secondary',
     '.btn-icon',
     '.folder-item',
+    '.prompt-card',
     '.card-btn',
     '.card-copy-main',
     '.sort-option',
@@ -985,6 +984,57 @@ document.addEventListener('pointerdown', (e) => {
     if (!target) return;
     createRipple(target, e.clientX, e.clientY);
 });
+
+// ─── Theme Transition ──────────────────────────────────────────
+let isThemeTransitioning = false;
+
+async function toggleThemeWithReveal(triggerEl) {
+    if (isThemeTransitioning || !themeTransitionLayer) return;
+
+    const html = document.documentElement;
+    const current = html.getAttribute('data-theme');
+    const next = current === 'dark' ? 'light' : 'dark';
+    const rect = triggerEl.getBoundingClientRect();
+    const originX = rect.left + rect.width / 2;
+    const originY = rect.top + rect.height / 2;
+
+    themeTransitionLayer.style.setProperty('--theme-reveal-x', `${originX}px`);
+    themeTransitionLayer.style.setProperty('--theme-reveal-y', `${originY}px`);
+    themeTransitionLayer.className = `theme-transition-layer to-${next}`;
+
+    isThemeTransitioning = true;
+    triggerEl.classList.add('is-busy');
+
+    void themeTransitionLayer.offsetWidth;
+
+    requestAnimationFrame(() => {
+        themeTransitionLayer.classList.add('is-prepared');
+        requestAnimationFrame(() => {
+            themeTransitionLayer.classList.add('is-expanding');
+        });
+    });
+
+    window.setTimeout(() => {
+        html.setAttribute('data-theme', next);
+        appSettings.theme = next;
+    }, 220);
+
+    try {
+        await invoke('set_theme', { theme: next });
+    } catch (error) {
+        console.error('Failed to persist theme:', error);
+    }
+
+    window.setTimeout(() => {
+        themeTransitionLayer.classList.add('is-fading');
+    }, 430);
+
+    window.setTimeout(() => {
+        themeTransitionLayer.className = 'theme-transition-layer';
+        triggerEl.classList.remove('is-busy');
+        isThemeTransitioning = false;
+    }, 860);
+}
 
 document.addEventListener('keydown', (e) => {
     if (!isRecording) return;

@@ -4805,3 +4805,236 @@ textarea::selection {
       "actions" !important;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   Final Interaction Cleanup
+   Fix collapse, smoother cards, better settings layout, theme reveal
+   ═══════════════════════════════════════════════════════════════ */
+
+.app-layout.sidebar-collapsed {
+  gap: 12px !important;
+  padding-left: 12px !important;
+}
+
+.app-layout.sidebar-collapsed .main-content {
+  border-radius: 32px 0 0 32px !important;
+}
+
+.sidebar.collapsed {
+  width: 0 !important;
+  min-width: 0 !important;
+  margin-left: 0 !important;
+  padding: 0 !important;
+  border-width: 0 !important;
+  opacity: 0;
+  transform: translateX(-20px) scale(0.985);
+  box-shadow: none !important;
+}
+
+.sidebar.collapsed > * {
+  opacity: 0;
+  transition: opacity 120ms ease !important;
+}
+
+.sidebar-expand-btn {
+  margin-left: 2px;
+}
+
+.prompt-card {
+  will-change: transform, box-shadow;
+}
+
+.prompt-card:hover {
+  transform: translateY(-2px) !important;
+}
+
+.prompt-card:active {
+  transform: translateY(-1px) scale(0.997) !important;
+}
+
+.main-content.is-layout-shifting .prompt-card,
+.main-content.is-layout-shifting .folder-item,
+.main-content.is-layout-shifting .empty-state {
+  transition-duration: 180ms !important;
+}
+
+.folder-item,
+.prompt-card,
+.btn-primary,
+.btn-secondary,
+.btn-icon,
+.card-btn,
+.card-copy-main,
+.sort-option,
+.settings-media-btn,
+.shortcut-record-btn {
+  transform-origin: center center;
+}
+
+.folder-item:hover {
+  transform: translateX(2px);
+}
+
+.folder-item.active {
+  transform: translateX(3px);
+}
+
+.ui-ripple {
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.34) 0%, rgba(255, 255, 255, 0.12) 42%, rgba(255, 255, 255, 0) 72%);
+  animation-duration: 760ms;
+}
+
+[data-theme="light"] .ui-ripple {
+  background: radial-gradient(circle, rgba(76, 139, 206, 0.28) 0%, rgba(76, 139, 206, 0.1) 42%, rgba(76, 139, 206, 0) 72%);
+}
+
+.theme-transition-layer {
+  --theme-reveal-x: calc(100% - 64px);
+  --theme-reveal-y: 28px;
+  position: fixed;
+  inset: 0;
+  z-index: 5000;
+  pointer-events: none;
+  opacity: 0;
+  clip-path: circle(0px at var(--theme-reveal-x) var(--theme-reveal-y));
+  transition: clip-path 760ms cubic-bezier(0.22, 1, 0.36, 1), opacity 220ms ease;
+}
+
+.theme-transition-layer.to-light {
+  background:
+    radial-gradient(circle at top right, rgba(255, 255, 255, 0.86) 0%, rgba(255, 255, 255, 0.28) 20%, rgba(234, 240, 248, 0.95) 54%, #e8eff8 100%);
+}
+
+.theme-transition-layer.to-dark {
+  background:
+    radial-gradient(circle at top right, rgba(137, 196, 255, 0.2) 0%, rgba(20, 36, 58, 0.44) 20%, rgba(8, 17, 29, 0.95) 58%, #08111d 100%);
+}
+
+.theme-transition-layer.is-prepared {
+  opacity: 1;
+}
+
+.theme-transition-layer.is-expanding {
+  clip-path: circle(160vmax at var(--theme-reveal-x) var(--theme-reveal-y));
+}
+
+.theme-transition-layer.is-fading {
+  opacity: 0;
+}
+
+.theme-toggle.is-busy {
+  pointer-events: none;
+}
+
+.theme-toggle.is-busy svg {
+  opacity: 1;
+}
+
+.sort-btn {
+  width: 44px !important;
+  height: 44px !important;
+  border-radius: 17px !important;
+}
+
+.sort-btn svg {
+  width: 18px !important;
+  height: 18px !important;
+}
+
+.sort-menu {
+  min-width: 226px !important;
+  padding: 8px !important;
+  border-radius: 22px !important;
+}
+
+.sort-option {
+  padding: 12px 14px !important;
+  border-radius: 14px !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.01em;
+}
+
+.sort-option + .sort-option {
+  margin-top: 4px;
+}
+
+.sort-option.active {
+  background: rgba(116, 182, 246, 0.14) !important;
+}
+
+[data-theme="light"] .sort-option.active {
+  background: rgba(76, 139, 206, 0.12) !important;
+}
+
+.settings-panel {
+  width: 560px !important;
+  max-width: min(94vw, 560px) !important;
+}
+
+.settings-media-card,
+.settings-media-card--wide {
+  grid-template-columns: 110px minmax(0, 1fr) !important;
+  grid-template-areas:
+    "preview meta"
+    "actions actions" !important;
+  align-items: start;
+  gap: 16px !important;
+}
+
+.settings-media-meta {
+  min-width: 0;
+  gap: 4px !important;
+}
+
+.settings-media-title {
+  max-width: 180px;
+  line-height: 1.15;
+}
+
+.settings-media-note,
+.settings-media-status {
+  max-width: 100%;
+}
+
+.settings-media-actions {
+  grid-area: actions;
+  padding-top: 2px;
+}
+
+.settings-media-btn {
+  min-width: 110px !important;
+}
+
+body.has-workspace-image .sidebar {
+  background: linear-gradient(180deg, rgba(13, 20, 33, 0.58) 0%, rgba(8, 15, 26, 0.76) 100%) !important;
+}
+
+body.has-workspace-image .main-content {
+  background: linear-gradient(180deg, rgba(12, 21, 35, 0.58) 0%, rgba(9, 18, 32, 0.72) 100%) !important;
+}
+
+[data-theme="light"] body.has-workspace-image .sidebar {
+  background: linear-gradient(180deg, rgba(248, 251, 255, 0.58) 0%, rgba(236, 242, 249, 0.72) 100%) !important;
+}
+
+[data-theme="light"] body.has-workspace-image .main-content {
+  background: linear-gradient(180deg, rgba(251, 253, 255, 0.56) 0%, rgba(239, 244, 250, 0.72) 100%) !important;
+}
+
+.win-minimize:hover {
+  background: rgba(255, 196, 77, 0.14) !important;
+  border-color: rgba(255, 196, 77, 0.2) !important;
+  color: #ffd267 !important;
+}
+
+.win-maximize:hover {
+  background: rgba(86, 217, 159, 0.14) !important;
+  border-color: rgba(86, 217, 159, 0.2) !important;
+  color: #7be0af !important;
+}
+
+.settings-btn:hover,
+.theme-toggle:hover {
+  color: #9bcaff !important;
+}
