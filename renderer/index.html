@@ -122,6 +122,7 @@
             Surface Glass
           </div>
           <div class="glass-settings">
+            <div class="settings-helper">Keep it simple: choose a style, then control how much of the image shows through.</div>
             <div class="glass-style-row">
               <span class="settings-label">Material Style</span>
               <div class="segmented-control" id="glassStyleControl">
@@ -131,31 +132,17 @@
             </div>
             <label class="glass-slider-row" for="surfaceGlassSlider">
               <div class="glass-slider-copy">
-                <span class="settings-label">Workspace Opacity</span>
-                <span class="glass-slider-value" id="surfaceGlassValue">88%</span>
+                <span class="settings-label">Surface Opacity</span>
+                <span class="glass-slider-value" id="surfaceGlassValue">82%</span>
               </div>
-              <input type="range" id="surfaceGlassSlider" min="68" max="98" step="1" value="88">
-            </label>
-            <label class="glass-slider-row" for="cardGlassSlider">
-              <div class="glass-slider-copy">
-                <span class="settings-label">Card Opacity</span>
-                <span class="glass-slider-value" id="cardGlassValue">82%</span>
-              </div>
-              <input type="range" id="cardGlassSlider" min="64" max="96" step="1" value="82">
-            </label>
-            <label class="glass-slider-row" for="glassBlurSlider">
-              <div class="glass-slider-copy">
-                <span class="settings-label">Blur Strength</span>
-                <span class="glass-slider-value" id="glassBlurValue">18px</span>
-              </div>
-              <input type="range" id="glassBlurSlider" min="0" max="30" step="1" value="18">
+              <input type="range" id="surfaceGlassSlider" min="14" max="98" step="1" value="82">
             </label>
             <label class="glass-slider-row" for="bgVisibilitySlider">
               <div class="glass-slider-copy">
-                <span class="settings-label">Background Visibility</span>
-                <span class="glass-slider-value" id="bgVisibilityValue">12%</span>
+                <span class="settings-label">Background Reveal</span>
+                <span class="glass-slider-value" id="bgVisibilityValue">24%</span>
               </div>
-              <input type="range" id="bgVisibilitySlider" min="0" max="28" step="1" value="12">
+              <input type="range" id="bgVisibilitySlider" min="0" max="96" step="1" value="24">
             </label>
           </div>
         </div>
@@ -176,7 +163,7 @@
               </div>
               <div class="settings-media-meta">
                 <div class="settings-media-title">Window Background</div>
-                <div class="settings-media-note">Shown behind the glass surfaces of the navigation, workspace, and cards</div>
+                <div class="settings-media-note">Shown behind the glass surfaces across the whole app</div>
                 <div class="settings-media-status" id="workspaceBgStatus">No image selected</div>
               </div>
               <div class="settings-media-actions">
@@ -188,7 +175,7 @@
         </div>
       </div>
       <div class="settings-footer">
-        <div class="settings-footer-note" id="settingsSaveState">Adjust the glass look, then save it.</div>
+        <div class="settings-footer-note" id="settingsSaveState">Live preview. Save to keep it.</div>
         <div class="settings-footer-actions">
           <button class="btn-secondary settings-action-btn" id="settingsCancelBtn" type="button">Cancel</button>
           <button class="btn-primary settings-action-btn" id="settingsSaveBtn" type="button" disabled>Save Changes</button>

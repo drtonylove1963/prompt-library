@@ -64,19 +64,19 @@ fn default_glass_mode() -> String {
 }
 
 fn default_surface_opacity() -> f32 {
-    0.88
-}
-
-fn default_card_opacity() -> f32 {
     0.82
 }
 
+fn default_card_opacity() -> f32 {
+    0.78
+}
+
 fn default_glass_blur() -> f32 {
-    18.0
+    14.0
 }
 
 fn default_background_visibility() -> f32 {
-    0.12
+    0.24
 }
 
 impl Default for AppData {
@@ -601,10 +601,10 @@ fn set_glass_settings(
             "classic" => "classic".into(),
             _ => "apple".into(),
         };
-        data.surface_opacity = surface_opacity.clamp(0.68, 0.98);
-        data.card_opacity = card_opacity.clamp(0.64, 0.96);
-        data.glass_blur = glass_blur.clamp(0.0, 30.0);
-        data.background_visibility = background_visibility.clamp(0.0, 0.28);
+        data.surface_opacity = surface_opacity.clamp(0.14, 0.98);
+        data.card_opacity = card_opacity.clamp(0.18, 0.96);
+        data.glass_blur = glass_blur.clamp(6.0, 26.0);
+        data.background_visibility = background_visibility.clamp(0.0, 0.96);
         snapshot_settings(&data)
     };
     state.save();
@@ -627,10 +627,10 @@ fn set_appearance_settings(
             "classic" => "classic".into(),
             _ => "apple".into(),
         };
-        data.surface_opacity = surface_opacity.clamp(0.68, 0.98);
-        data.card_opacity = card_opacity.clamp(0.64, 0.96);
-        data.glass_blur = glass_blur.clamp(0.0, 30.0);
-        data.background_visibility = background_visibility.clamp(0.0, 0.28);
+        data.surface_opacity = surface_opacity.clamp(0.14, 0.98);
+        data.card_opacity = card_opacity.clamp(0.18, 0.96);
+        data.glass_blur = glass_blur.clamp(6.0, 26.0);
+        data.background_visibility = background_visibility.clamp(0.0, 0.96);
         data.main_background = background_filename.clone();
         data.sidebar_background = background_filename;
         snapshot_settings(&data)

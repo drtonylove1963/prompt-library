@@ -5850,10 +5850,10 @@ body.has-workspace-image .main-content {
 
 :root {
   --chrome-height: 48px;
-  --surface-glass-opacity: 0.88;
-  --card-glass-opacity: 0.82;
-  --glass-blur-strength: 18px;
-  --background-image-strength: 0.12;
+  --surface-glass-opacity: 0.82;
+  --card-glass-opacity: 0.78;
+  --glass-blur-strength: 14px;
+  --background-image-strength: 0.24;
   --glass-edge-opacity: 0.14;
   --glass-highlight-opacity: 0.18;
 }
@@ -6150,6 +6150,14 @@ body.has-workspace-image .main-content {
 .glass-settings {
   display: grid;
   gap: 14px;
+}
+
+.settings-helper {
+  margin: -2px 0 2px !important;
+  font-size: 12px !important;
+  line-height: 1.45 !important;
+  color: var(--text-secondary) !important;
+  max-width: 460px !important;
 }
 
 .glass-style-row {

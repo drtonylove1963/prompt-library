@@ -39,10 +39,10 @@ let appSettings = {
     sidebar_background: '',
     main_background: '',
     glass_mode: 'apple',
-    surface_opacity: 0.88,
-    card_opacity: 0.82,
-    glass_blur: 18,
-    background_visibility: 0.12,
+    surface_opacity: 0.82,
+    card_opacity: 0.78,
+    glass_blur: 14,
+    background_visibility: 0.24,
 };
 let settingsDraft = null;
 let settingsDirty = false;
@@ -97,12 +97,8 @@ const themeTransitionLayer = $('#themeTransitionLayer');
 const appBackground = $('#appBackground');
 const themeToggleBtn = $('#themeToggle');
 const surfaceGlassSlider = $('#surfaceGlassSlider');
-const cardGlassSlider = $('#cardGlassSlider');
-const glassBlurSlider = $('#glassBlurSlider');
 const bgVisibilitySlider = $('#bgVisibilitySlider');
 const surfaceGlassValue = $('#surfaceGlassValue');
-const cardGlassValue = $('#cardGlassValue');
-const glassBlurValue = $('#glassBlurValue');
 const bgVisibilityValue = $('#bgVisibilityValue');
 const glassStyleOptions = $$('[data-glass-style-option]');
 
@@ -199,21 +195,44 @@ async function applyWorkspaceBackgrounds(settings = appSettings) {
     await previewWorkspaceBackground(getWorkspaceBackgroundFilename(settings));
 }
 
-function syncGlassControls(settings = appSettings) {
-    const surfaceOpacity = Math.round(clampNumber(settings.surface_opacity, 0.68, 0.98, 0.88) * 100);
-    const cardOpacity = Math.round(clampNumber(settings.card_opacity, 0.64, 0.96, 0.82) * 100);
-    const glassBlur = Math.round(clampNumber(settings.glass_blur, 0, 30, 18));
-    const backgroundVisibility = Math.round(clampNumber(settings.background_visibility, 0, 0.28, 0.12) * 100);
+function normalizeGlassSettings(settings = appSettings) {
     const glassMode = settings.glass_mode === 'classic' ? 'classic' : 'apple';
+    const surfaceOpacity = clampNumber(settings.surface_opacity, 0.14, 0.98, 0.82);
+    const backgroundVisibility = clampNumber(settings.background_visibility, 0, 0.96, 0.24);
+    const revealRatio = backgroundVisibility / 0.96;
+    const cardOpacity = clampNumber(
+        surfaceOpacity + (glassMode === 'classic' ? 0.08 : 0.05) - revealRatio * 0.08,
+        0.18,
+        0.96,
+        0.78
+    );
+    const glassBlur = Math.round(clampNumber(
+        (glassMode === 'classic' ? 10 : 14) + (1 - revealRatio) * 8 + surfaceOpacity * 4,
+        6,
+        26,
+        14
+    ));
+
+    return {
+        ...settings,
+        glass_mode: glassMode,
+        surface_opacity: surfaceOpacity,
+        card_opacity: cardOpacity,
+        glass_blur: glassBlur,
+        background_visibility: backgroundVisibility,
+    };
+}
+
+function syncGlassControls(settings = appSettings) {
+    const normalized = normalizeGlassSettings(settings);
+    const surfaceOpacity = Math.round(normalized.surface_opacity * 100);
+    const backgroundVisibility = Math.round(normalized.background_visibility * 100);
+    const glassMode = normalized.glass_mode;
 
     if (surfaceGlassSlider) surfaceGlassSlider.value = String(surfaceOpacity);
-    if (cardGlassSlider) cardGlassSlider.value = String(cardOpacity);
-    if (glassBlurSlider) glassBlurSlider.value = String(glassBlur);
     if (bgVisibilitySlider) bgVisibilitySlider.value = String(backgroundVisibility);
 
     if (surfaceGlassValue) surfaceGlassValue.textContent = `${surfaceOpacity}%`;
-    if (cardGlassValue) cardGlassValue.textContent = `${cardOpacity}%`;
-    if (glassBlurValue) glassBlurValue.textContent = `${glassBlur}px`;
     if (bgVisibilityValue) bgVisibilityValue.textContent = `${backgroundVisibility}%`;
 
     glassStyleOptions.forEach((option) => {
@@ -222,11 +241,12 @@ function syncGlassControls(settings = appSettings) {
 }
 
 function applyGlassSettings(settings = appSettings) {
-    const glassMode = settings.glass_mode === 'classic' ? 'classic' : 'apple';
-    const surfaceOpacity = clampNumber(settings.surface_opacity, 0.68, 0.98, 0.88);
-    const cardOpacity = clampNumber(settings.card_opacity, 0.64, 0.96, 0.82);
-    const glassBlur = clampNumber(settings.glass_blur, 0, 30, 18);
-    const backgroundVisibility = clampNumber(settings.background_visibility, 0, 0.28, 0.12);
+    const normalizedSettings = normalizeGlassSettings(settings);
+    const glassMode = normalizedSettings.glass_mode;
+    const surfaceOpacity = normalizedSettings.surface_opacity;
+    const cardOpacity = normalizedSettings.card_opacity;
+    const glassBlur = normalizedSettings.glass_blur;
+    const backgroundVisibility = normalizedSettings.background_visibility;
 
     document.documentElement.setAttribute('data-glass-style', glassMode);
     document.documentElement.style.setProperty('--surface-glass-opacity', surfaceOpacity.toFixed(2));
@@ -234,28 +254,17 @@ function applyGlassSettings(settings = appSettings) {
     document.documentElement.style.setProperty('--glass-blur-strength', `${glassBlur}px`);
     document.documentElement.style.setProperty('--background-image-strength', backgroundVisibility.toFixed(2));
 
-    const normalizedSettings = {
-        ...settings,
-        glass_mode: glassMode,
-        surface_opacity: surfaceOpacity,
-        card_opacity: cardOpacity,
-        glass_blur: glassBlur,
-        background_visibility: backgroundVisibility,
-    };
-
     syncGlassControls(normalizedSettings);
     return normalizedSettings;
 }
 
 function collectGlassSettingsFromControls() {
     const activeStyle = Array.from(glassStyleOptions).find((option) => option.classList.contains('active'));
-    return {
+    return normalizeGlassSettings({
         glass_mode: activeStyle?.dataset.glassStyleOption === 'classic' ? 'classic' : 'apple',
-        surface_opacity: clampNumber((surfaceGlassSlider?.value || 88) / 100, 0.68, 0.98, 0.88),
-        card_opacity: clampNumber((cardGlassSlider?.value || 82) / 100, 0.64, 0.96, 0.82),
-        glass_blur: clampNumber(glassBlurSlider?.value || 18, 0, 30, 18),
-        background_visibility: clampNumber((bgVisibilitySlider?.value || 12) / 100, 0, 0.28, 0.12),
-    };
+        surface_opacity: clampNumber((surfaceGlassSlider?.value || 82) / 100, 0.14, 0.98, 0.82),
+        background_visibility: clampNumber((bgVisibilitySlider?.value || 24) / 100, 0, 0.96, 0.24),
+    });
 }
 
 async function hydrateSettings(settings) {
@@ -993,8 +1002,8 @@ function updateSettingsSaveState() {
     settingsSaveBtn.disabled = !settingsDirty;
     settingsCancelBtn.disabled = false;
     settingsSaveState.textContent = settingsDirty
-        ? 'Unsaved appearance changes'
-        : 'Appearance matches your saved setup';
+        ? 'Unsaved changes'
+        : 'Saved';
 }
 
 function setSettingsDirty(dirty) {
@@ -1158,7 +1167,7 @@ glassStyleOptions.forEach((option) => {
     });
 });
 
-[surfaceGlassSlider, cardGlassSlider, glassBlurSlider, bgVisibilitySlider].forEach((slider) => {
+[surfaceGlassSlider, bgVisibilitySlider].forEach((slider) => {
     slider?.addEventListener('input', previewGlassSettings);
 });
 
