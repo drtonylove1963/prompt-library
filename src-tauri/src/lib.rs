@@ -628,19 +628,31 @@ fn open_quicksave_window(app: &AppHandle) {
         return;
     }
 
-    let _ = WebviewWindowBuilder::new(
-        app,
-        "quicksave",
-        WebviewUrl::App("quicksave.html".into()),
-    )
-    .title("Quick Save")
-    .inner_size(460.0, 520.0)
-    .resizable(false)
-    .decorations(false)
-    .skip_taskbar(true)
-    .always_on_top(true)
-    .center()
-    .build();
+    let build_quicksave = || {
+        WebviewWindowBuilder::new(
+            app,
+            "quicksave",
+            WebviewUrl::App("quicksave.html".into()),
+        )
+        .title("Quick Save")
+        .inner_size(460.0, 520.0)
+        .resizable(false)
+        .decorations(false)
+        .skip_taskbar(true)
+        .always_on_top(true)
+        .center()
+    };
+
+    let builder = if let Some(icon) = app.default_window_icon().cloned() {
+        match build_quicksave().icon(icon) {
+            Ok(builder) => builder,
+            Err(_) => build_quicksave(),
+        }
+    } else {
+        build_quicksave()
+    };
+
+    let _ = builder.build();
 }
 
 // ─── Organisation Commands ──────────────────────────────────────
@@ -759,6 +771,12 @@ pub fn run() {
                 data_path,
                 image_dir,
             });
+
+            if let Some(window) = app.get_webview_window("main") {
+                if let Some(icon) = app.default_window_icon().cloned() {
+                    let _ = window.set_icon(icon);
+                }
+            }
 
             // ─── System Tray ───
             let show_item = MenuItem::with_id(app, "show", "Show Window", true, None::<&str>)?;

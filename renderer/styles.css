@@ -6290,7 +6290,8 @@ Final Settings + Shell Stability
 }
 
 .app-layout {
-  padding-top: calc(var(--chrome-height) + 12px) !important;
+  top: var(--chrome-height) !important;
+  padding: 10px 0 10px 10px !important;
 }
 
 .sidebar,
