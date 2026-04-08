@@ -38,6 +38,11 @@ let appSettings = {
     shortcut: 'CommandOrControl+Shift+S',
     sidebar_background: '',
     main_background: '',
+    glass_mode: 'apple',
+    surface_opacity: 0.88,
+    card_opacity: 0.82,
+    glass_blur: 18,
+    background_visibility: 0.12,
 };
 
 // ─── DOM References ────────────────────────────────────────────
@@ -88,6 +93,15 @@ const workspaceBgClearBtn = $('#workspaceBgClearBtn');
 const themeTransitionLayer = $('#themeTransitionLayer');
 const appBackground = $('#appBackground');
 const themeToggleBtn = $('#themeToggle');
+const surfaceGlassSlider = $('#surfaceGlassSlider');
+const cardGlassSlider = $('#cardGlassSlider');
+const glassBlurSlider = $('#glassBlurSlider');
+const bgVisibilitySlider = $('#bgVisibilitySlider');
+const surfaceGlassValue = $('#surfaceGlassValue');
+const cardGlassValue = $('#cardGlassValue');
+const glassBlurValue = $('#glassBlurValue');
+const bgVisibilityValue = $('#bgVisibilityValue');
+const glassStyleOptions = $$('[data-glass-style-option]');
 
 // ─── Helpers ───────────────────────────────────────────────────
 function escapeHtml(str) {
@@ -125,6 +139,12 @@ function showToast(message = 'Copied to clipboard!') {
 
 function escapeCssUrl(url) {
     return String(url || '').replace(/"/g, '\\"');
+}
+
+function clampNumber(value, min, max, fallback) {
+    const number = Number(value);
+    if (!Number.isFinite(number)) return fallback;
+    return Math.min(max, Math.max(min, number));
 }
 
 async function resolveStoredImageUrl(filename) {
@@ -169,6 +189,64 @@ async function applyWorkspaceBackgrounds(settings = appSettings) {
     );
 }
 
+function syncGlassControls(settings = appSettings) {
+    const surfaceOpacity = Math.round(clampNumber(settings.surface_opacity, 0.68, 0.98, 0.88) * 100);
+    const cardOpacity = Math.round(clampNumber(settings.card_opacity, 0.64, 0.96, 0.82) * 100);
+    const glassBlur = Math.round(clampNumber(settings.glass_blur, 0, 30, 18));
+    const backgroundVisibility = Math.round(clampNumber(settings.background_visibility, 0, 0.28, 0.12) * 100);
+    const glassMode = settings.glass_mode === 'classic' ? 'classic' : 'apple';
+
+    if (surfaceGlassSlider) surfaceGlassSlider.value = String(surfaceOpacity);
+    if (cardGlassSlider) cardGlassSlider.value = String(cardOpacity);
+    if (glassBlurSlider) glassBlurSlider.value = String(glassBlur);
+    if (bgVisibilitySlider) bgVisibilitySlider.value = String(backgroundVisibility);
+
+    if (surfaceGlassValue) surfaceGlassValue.textContent = `${surfaceOpacity}%`;
+    if (cardGlassValue) cardGlassValue.textContent = `${cardOpacity}%`;
+    if (glassBlurValue) glassBlurValue.textContent = `${glassBlur}px`;
+    if (bgVisibilityValue) bgVisibilityValue.textContent = `${backgroundVisibility}%`;
+
+    glassStyleOptions.forEach((option) => {
+        option.classList.toggle('active', option.dataset.glassStyleOption === glassMode);
+    });
+}
+
+function applyGlassSettings(settings = appSettings) {
+    const glassMode = settings.glass_mode === 'classic' ? 'classic' : 'apple';
+    const surfaceOpacity = clampNumber(settings.surface_opacity, 0.68, 0.98, 0.88);
+    const cardOpacity = clampNumber(settings.card_opacity, 0.64, 0.96, 0.82);
+    const glassBlur = clampNumber(settings.glass_blur, 0, 30, 18);
+    const backgroundVisibility = clampNumber(settings.background_visibility, 0, 0.28, 0.12);
+
+    document.documentElement.setAttribute('data-glass-style', glassMode);
+    document.documentElement.style.setProperty('--surface-glass-opacity', surfaceOpacity.toFixed(2));
+    document.documentElement.style.setProperty('--card-glass-opacity', cardOpacity.toFixed(2));
+    document.documentElement.style.setProperty('--glass-blur-strength', `${glassBlur}px`);
+    document.documentElement.style.setProperty('--background-image-strength', backgroundVisibility.toFixed(2));
+
+    appSettings = {
+        ...appSettings,
+        glass_mode: glassMode,
+        surface_opacity: surfaceOpacity,
+        card_opacity: cardOpacity,
+        glass_blur: glassBlur,
+        background_visibility: backgroundVisibility,
+    };
+
+    syncGlassControls(appSettings);
+}
+
+function collectGlassSettingsFromControls() {
+    const activeStyle = Array.from(glassStyleOptions).find((option) => option.classList.contains('active'));
+    return {
+        glass_mode: activeStyle?.dataset.glassStyleOption === 'classic' ? 'classic' : 'apple',
+        surface_opacity: clampNumber((surfaceGlassSlider?.value || 88) / 100, 0.68, 0.98, 0.88),
+        card_opacity: clampNumber((cardGlassSlider?.value || 82) / 100, 0.64, 0.96, 0.82),
+        glass_blur: clampNumber(glassBlurSlider?.value || 18, 0, 30, 18),
+        background_visibility: clampNumber((bgVisibilitySlider?.value || 12) / 100, 0, 0.28, 0.12),
+    };
+}
+
 async function hydrateSettings(settings) {
     if (!settings) return;
     appSettings = { ...appSettings, ...settings };
@@ -178,6 +256,7 @@ async function hydrateSettings(settings) {
         shortcutDisplay.textContent = appSettings.shortcut || 'CommandOrControl+Shift+S';
     }
 
+    applyGlassSettings(appSettings);
     await applyWorkspaceBackgrounds(appSettings);
 }
 
@@ -959,6 +1038,38 @@ async function clearWorkspaceBackground() {
 workspaceBgUploadBtn?.addEventListener('click', () => pickWorkspaceBackground());
 workspaceBgClearBtn?.addEventListener('click', () => clearWorkspaceBackground());
 
+let glassSettingsSaveTimer = null;
+
+async function persistGlassSettings() {
+    const payload = collectGlassSettingsFromControls();
+    const settings = await invoke('set_glass_settings', payload);
+    if (settings) {
+        appSettings = { ...appSettings, ...settings };
+        applyGlassSettings(appSettings);
+    }
+}
+
+function previewGlassSettings() {
+    const payload = collectGlassSettingsFromControls();
+    appSettings = { ...appSettings, ...payload };
+    applyGlassSettings(appSettings);
+    clearTimeout(glassSettingsSaveTimer);
+    glassSettingsSaveTimer = setTimeout(() => {
+        persistGlassSettings().catch((error) => console.error('Failed to save glass settings:', error));
+    }, 140);
+}
+
+glassStyleOptions.forEach((option) => {
+    option.addEventListener('click', () => {
+        glassStyleOptions.forEach((item) => item.classList.toggle('active', item === option));
+        previewGlassSettings();
+    });
+});
+
+[surfaceGlassSlider, cardGlassSlider, glassBlurSlider, bgVisibilitySlider].forEach((slider) => {
+    slider?.addEventListener('input', previewGlassSettings);
+});
+
 function stopRecording() {
     isRecording = false;
     shortcutRecorder.style.display = 'none';
@@ -975,6 +1086,7 @@ const rippleSelector = [
     '.card-btn',
     '.card-copy-main',
     '.sort-option',
+    '.segmented-option',
     '.settings-close',
     '.shortcut-record-btn',
     '.settings-media-btn',

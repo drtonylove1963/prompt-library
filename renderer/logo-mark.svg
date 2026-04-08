@@ -1,15 +1,16 @@
 <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <linearGradient id="logoPFill" x1="24" y1="8" x2="43" y2="56" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#B6DDFF"/>
-      <stop offset="0.48" stop-color="#82BCF3"/>
-      <stop offset="1" stop-color="#4F8FD1"/>
+    <linearGradient id="logoStroke" x1="23" y1="12" x2="46" y2="52" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#BFE1FF"/>
+      <stop offset="0.46" stop-color="#85BDF5"/>
+      <stop offset="1" stop-color="#4E90D4"/>
     </linearGradient>
   </defs>
   <path
-    fill-rule="evenodd"
-    clip-rule="evenodd"
-    d="M21 9.5C21 8.11929 22.1193 7 23.5 7H31.2C43.8985 7 52.5 14.6347 52.5 25.8C52.5 36.9365 43.8778 44.6 31.13 44.6H29.7V54.5C29.7 55.8807 28.5807 57 27.2 57H23.5C22.1193 57 21 55.8807 21 54.5V9.5ZM29.7 16.2V35.4H31.02C38.5964 35.4 43.3 31.8176 43.3 25.8C43.3 19.7618 38.6173 16.2 31.09 16.2H29.7Z"
-    fill="url(#logoPFill)"
+    d="M23 51V13H35.6C43.38 13 48.5 18.11 48.5 25.44C48.5 32.69 43.47 37.88 35.82 37.88H23"
+    stroke="url(#logoStroke)"
+    stroke-width="8"
+    stroke-linecap="round"
+    stroke-linejoin="round"
   />
 </svg>

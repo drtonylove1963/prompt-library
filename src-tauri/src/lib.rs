@@ -43,10 +43,40 @@ pub struct AppData {
     pub sidebar_background: String,
     #[serde(default)]
     pub main_background: String,
+    #[serde(default = "default_glass_mode")]
+    pub glass_mode: String,
+    #[serde(default = "default_surface_opacity")]
+    pub surface_opacity: f32,
+    #[serde(default = "default_card_opacity")]
+    pub card_opacity: f32,
+    #[serde(default = "default_glass_blur")]
+    pub glass_blur: f32,
+    #[serde(default = "default_background_visibility")]
+    pub background_visibility: f32,
 }
 
 fn default_shortcut() -> String {
     "CommandOrControl+Shift+S".into()
+}
+
+fn default_glass_mode() -> String {
+    "apple".into()
+}
+
+fn default_surface_opacity() -> f32 {
+    0.88
+}
+
+fn default_card_opacity() -> f32 {
+    0.82
+}
+
+fn default_glass_blur() -> f32 {
+    18.0
+}
+
+fn default_background_visibility() -> f32 {
+    0.12
 }
 
 impl Default for AppData {
@@ -97,6 +127,11 @@ impl Default for AppData {
             shortcut: default_shortcut(),
             sidebar_background: String::new(),
             main_background: String::new(),
+            glass_mode: default_glass_mode(),
+            surface_opacity: default_surface_opacity(),
+            card_opacity: default_card_opacity(),
+            glass_blur: default_glass_blur(),
+            background_visibility: default_background_visibility(),
         }
     }
 }
@@ -484,6 +519,11 @@ pub struct Settings {
     pub theme: String,
     pub sidebar_background: String,
     pub main_background: String,
+    pub glass_mode: String,
+    pub surface_opacity: f32,
+    pub card_opacity: f32,
+    pub glass_blur: f32,
+    pub background_visibility: f32,
 }
 
 fn snapshot_settings(data: &AppData) -> Settings {
@@ -492,6 +532,11 @@ fn snapshot_settings(data: &AppData) -> Settings {
         theme: data.theme.clone(),
         sidebar_background: data.sidebar_background.clone(),
         main_background: data.main_background.clone(),
+        glass_mode: data.glass_mode.clone(),
+        surface_opacity: data.surface_opacity,
+        card_opacity: data.card_opacity,
+        glass_blur: data.glass_blur,
+        background_visibility: data.background_visibility,
     }
 }
 
@@ -535,6 +580,31 @@ fn set_background_image(state: State<'_, AppState>, area: String, filename: Stri
             "main" => data.main_background = filename,
             _ => {}
         }
+        snapshot_settings(&data)
+    };
+    state.save();
+    settings
+}
+
+#[tauri::command]
+fn set_glass_settings(
+    state: State<'_, AppState>,
+    glass_mode: String,
+    surface_opacity: f32,
+    card_opacity: f32,
+    glass_blur: f32,
+    background_visibility: f32,
+) -> Settings {
+    let settings = {
+        let mut data = state.data.lock().unwrap();
+        data.glass_mode = match glass_mode.as_str() {
+            "classic" => "classic".into(),
+            _ => "apple".into(),
+        };
+        data.surface_opacity = surface_opacity.clamp(0.68, 0.98);
+        data.card_opacity = card_opacity.clamp(0.64, 0.96);
+        data.glass_blur = glass_blur.clamp(0.0, 30.0);
+        data.background_visibility = background_visibility.clamp(0.0, 0.28);
         snapshot_settings(&data)
     };
     state.save();
@@ -779,6 +849,7 @@ pub fn run() {
             get_settings,
             set_shortcut,
             set_background_image,
+            set_glass_settings,
             close_quicksave,
             window_minimize,
             window_maximize,
