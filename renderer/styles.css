@@ -5753,3 +5753,92 @@ body.has-workspace-image .main-content {
   background: rgba(248, 251, 255, 0.92) !important;
   border-bottom-color: rgba(125, 145, 170, 0.12) !important;
 }
+
+.app-background {
+  opacity: 0 !important;
+}
+
+body.has-workspace-image .app-background {
+  opacity: 0.08 !important;
+}
+
+[data-theme="light"] body.has-workspace-image .app-background {
+  opacity: 0.06 !important;
+}
+
+body.has-workspace-image .sidebar {
+  background: linear-gradient(180deg, rgba(15, 23, 38, 0.985) 0%, rgba(10, 18, 31, 0.992) 100%) !important;
+}
+
+body.has-workspace-image .main-content {
+  background: linear-gradient(180deg, rgba(10, 20, 35, 0.988) 0%, rgba(10, 20, 35, 0.996) 100%) !important;
+}
+
+[data-theme="light"] body.has-workspace-image .sidebar {
+  background: linear-gradient(180deg, rgba(247, 250, 254, 0.985) 0%, rgba(238, 243, 249, 0.992) 100%) !important;
+}
+
+[data-theme="light"] body.has-workspace-image .main-content {
+  background: linear-gradient(180deg, rgba(249, 252, 255, 0.988) 0%, rgba(240, 245, 251, 0.996) 100%) !important;
+}
+
+.modal-overlay,
+.settings-overlay,
+.confirm-overlay,
+.lightbox-overlay {
+  position: fixed !important;
+  inset: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  pointer-events: none;
+}
+
+.modal-overlay.active,
+.settings-overlay.active,
+.confirm-overlay.active,
+.lightbox-overlay.active {
+  pointer-events: all;
+}
+
+.modal-overlay {
+  z-index: 1000 !important;
+  background: rgba(6, 12, 22, 0.42) !important;
+  backdrop-filter: blur(10px) saturate(110%) !important;
+  -webkit-backdrop-filter: blur(10px) saturate(110%) !important;
+}
+
+.settings-overlay {
+  z-index: 2000 !important;
+  background: rgba(6, 12, 22, 0.42) !important;
+  backdrop-filter: blur(10px) saturate(110%) !important;
+  -webkit-backdrop-filter: blur(10px) saturate(110%) !important;
+}
+
+.confirm-overlay {
+  z-index: 4000 !important;
+  background: rgba(6, 12, 22, 0.42) !important;
+  backdrop-filter: blur(10px) saturate(110%) !important;
+  -webkit-backdrop-filter: blur(10px) saturate(110%) !important;
+}
+
+.lightbox-overlay {
+  z-index: 5000 !important;
+}
+
+[data-theme="light"] .modal-overlay,
+[data-theme="light"] .settings-overlay,
+[data-theme="light"] .confirm-overlay {
+  background: rgba(236, 241, 248, 0.46) !important;
+}
+
+.toast {
+  position: fixed !important;
+  left: 50% !important;
+  bottom: 28px !important;
+  width: auto !important;
+  max-width: min(540px, calc(100vw - 32px)) !important;
+  z-index: 6000 !important;
+}
