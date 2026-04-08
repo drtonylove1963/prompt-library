@@ -1,11 +1,9 @@
 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <linearGradient id="pStroke" x1="7.75" y1="4" x2="16.5" y2="19.5" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#F7FAFF"/>
-      <stop offset="0.46" stop-color="#DBE5F3"/>
-      <stop offset="1" stop-color="#A5BDD6"/>
+    <linearGradient id="pFill" x1="8.25" y1="3" x2="15.75" y2="21" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#8FC8FF"/>
+      <stop offset="1" stop-color="#4D80B7"/>
     </linearGradient>
   </defs>
-  <path d="M8.15 4.25V19.75" stroke="url(#pStroke)" stroke-width="2.8" stroke-linecap="round"/>
-  <path d="M8.15 4.25H12.8C15.097 4.25 16.95 6.103 16.95 8.4C16.95 10.697 15.097 12.55 12.8 12.55H8.15" stroke="url(#pStroke)" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M7.65 3.35C7.65 2.93 7.98 2.6 8.4 2.6H12.48C16.26 2.6 19 5.17 19 8.76C19 12.36 16.24 14.94 12.45 14.94H10.65V20.15C10.65 20.57 10.32 20.9 9.9 20.9H8.4C7.98 20.9 7.65 20.57 7.65 20.15V3.35ZM10.65 5.53V12H12.34C14.47 12 15.98 10.79 15.98 8.76C15.98 6.76 14.49 5.53 12.37 5.53H10.65Z" fill="url(#pFill)"/>
 </svg>

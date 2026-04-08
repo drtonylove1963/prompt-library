@@ -66,18 +66,23 @@
             height: 100%;
         }
 
+        html {
+            background: var(--bg-shell);
+            overflow: hidden;
+        }
+
         body {
             font-family: var(--font);
             color: var(--text-primary);
             background:
-                linear-gradient(180deg, rgba(255, 255, 255, 0.035) 0%, rgba(255, 255, 255, 0.01) 100%),
-                var(--bg-base);
-            border: 1px solid var(--border);
-            border-radius: 22px;
+                linear-gradient(180deg, rgba(255, 255, 255, 0.025) 0%, rgba(255, 255, 255, 0.01) 100%),
+                var(--bg-shell);
+            border: none;
+            border-radius: 0;
             overflow: hidden;
             display: flex;
             flex-direction: column;
-            box-shadow: var(--shadow-lg);
+            box-shadow: none;
         }
 
         .qs-header {
@@ -86,7 +91,7 @@
             justify-content: space-between;
             padding: 16px 18px 14px;
             border-bottom: 1px solid var(--border);
-            background: rgba(255, 255, 255, 0.02);
+            background: rgba(255, 255, 255, 0.015);
             cursor: move;
         }
 
@@ -98,20 +103,20 @@
         }
 
         .qs-icon-wrap {
-            width: 28px;
-            height: 28px;
-            border-radius: 12px;
+            width: 30px;
+            height: 30px;
+            border-radius: 999px;
             display: flex;
             align-items: center;
             justify-content: center;
-            background: var(--bg-subtle);
+            background: rgba(255, 255, 255, 0.055);
             border: 1px solid var(--border);
             flex-shrink: 0;
         }
 
         .qs-logo {
-            width: 14px;
-            height: 14px;
+            width: 13px;
+            height: 13px;
             display: block;
         }
 
@@ -249,7 +254,7 @@
             gap: 10px;
             padding: 14px 18px;
             border-top: 1px solid var(--border);
-            background: rgba(255, 255, 255, 0.018);
+            background: rgba(255, 255, 255, 0.01);
         }
 
         .qs-btn {
@@ -380,6 +385,20 @@
 
         [data-theme="light"] ::-webkit-scrollbar-thumb {
             background: rgba(125, 145, 170, 0.18);
+        }
+
+        [data-theme="light"] html,
+        [data-theme="light"] body {
+            background: #eef3fa;
+        }
+
+        [data-theme="light"] .qs-header,
+        [data-theme="light"] .qs-footer {
+            background: rgba(255, 255, 255, 0.14);
+        }
+
+        [data-theme="light"] .qs-icon-wrap {
+            background: rgba(255, 255, 255, 0.55);
         }
     </style>
 </head>
