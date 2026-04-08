@@ -11,7 +11,7 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 
-<body>
+<body class="app-booting">
   <!-- ─── Title Bar ─── -->
   <header class="titlebar" id="titlebar" data-tauri-drag-region>
     <div class="titlebar-drag" data-tauri-drag-region>
@@ -71,6 +71,7 @@
   </header>
 
   <div class="theme-transition-layer" id="themeTransitionLayer" aria-hidden="true"></div>
+  <div class="app-background" id="appBackground" aria-hidden="true"></div>
 
   <!-- ─── Settings Panel Overlay ─── -->
   <div class="settings-overlay" id="settingsOverlay">

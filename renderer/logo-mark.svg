@@ -1,9 +1,15 @@
-<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <linearGradient id="pFill" x1="7.4" y1="3" x2="16.4" y2="21" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#8EC8FF"/>
-      <stop offset="1" stop-color="#4E82BA"/>
+    <linearGradient id="logoPFill" x1="24" y1="8" x2="43" y2="56" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#B6DDFF"/>
+      <stop offset="0.48" stop-color="#82BCF3"/>
+      <stop offset="1" stop-color="#4F8FD1"/>
     </linearGradient>
   </defs>
-  <path d="M6.95 3.3C6.95 2.91 7.26 2.6 7.65 2.6H11.96C16.34 2.6 19.12 5.04 19.12 8.81C19.12 12.58 16.3 15.03 11.91 15.03H9.98V20.2C9.98 20.59 9.67 20.9 9.28 20.9H7.65C7.26 20.9 6.95 20.59 6.95 20.2V3.3ZM9.98 5.48V12.15H11.78C14.36 12.15 16.02 10.94 16.02 8.81C16.02 6.72 14.38 5.48 11.81 5.48H9.98Z" fill="url(#pFill)"/>
+  <path
+    fill-rule="evenodd"
+    clip-rule="evenodd"
+    d="M21 9.5C21 8.11929 22.1193 7 23.5 7H31.2C43.8985 7 52.5 14.6347 52.5 25.8C52.5 36.9365 43.8778 44.6 31.13 44.6H29.7V54.5C29.7 55.8807 28.5807 57 27.2 57H23.5C22.1193 57 21 55.8807 21 54.5V9.5ZM29.7 16.2V35.4H31.02C38.5964 35.4 43.3 31.8176 43.3 25.8C43.3 19.7618 38.6173 16.2 31.09 16.2H29.7Z"
+    fill="url(#logoPFill)"
+  />
 </svg>

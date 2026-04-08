@@ -86,6 +86,7 @@ const workspaceBgStatus = $('#workspaceBgStatus');
 const workspaceBgUploadBtn = $('#workspaceBgUploadBtn');
 const workspaceBgClearBtn = $('#workspaceBgClearBtn');
 const themeTransitionLayer = $('#themeTransitionLayer');
+const appBackground = $('#appBackground');
 const themeToggleBtn = $('#themeToggle');
 
 // ─── Helpers ───────────────────────────────────────────────────
@@ -133,7 +134,9 @@ async function resolveStoredImageUrl(filename) {
 }
 
 function applyWorkspaceBackground(imageUrl) {
-    document.body.style.setProperty('--workspace-bg-image', imageUrl ? `url("${escapeCssUrl(imageUrl)}")` : 'none');
+    const backgroundValue = imageUrl ? `url("${escapeCssUrl(imageUrl)}")` : 'none';
+    document.body.style.setProperty('--workspace-bg-image', backgroundValue);
+    appBackground?.style.setProperty('--app-bg-image', backgroundValue);
 }
 
 function updateBackgroundPreview(previewEl, statusEl, clearBtn, imageUrl, hasImage, areaLabel) {
@@ -212,6 +215,7 @@ confirmOverlay.addEventListener('click', (e) => {
 
 // ─── Sidebar Collapse / Expand ─────────────────────────────────
 let layoutRefreshTimer = null;
+let sidebarRevealTimer = null;
 
 function refreshWorkspaceLayout() {
     mainContent.classList.add('is-layout-shifting');
@@ -219,13 +223,27 @@ function refreshWorkspaceLayout() {
     layoutRefreshTimer = setTimeout(() => {
         mainContent.classList.remove('is-layout-shifting');
         window.dispatchEvent(new Event('resize'));
-    }, 320);
+    }, 380);
+}
+
+function playSidebarReveal() {
+    clearTimeout(sidebarRevealTimer);
+    sidebar.classList.remove('is-revealing');
+    void sidebar.offsetWidth;
+    sidebar.classList.add('is-revealing');
+    sidebarRevealTimer = setTimeout(() => {
+        sidebar.classList.remove('is-revealing');
+    }, 520);
 }
 
 function setSidebarCollapsed(collapsed) {
+    const wasCollapsed = sidebar.classList.contains('collapsed');
     sidebar.classList.toggle('collapsed', collapsed);
     appLayout.classList.toggle('sidebar-collapsed', collapsed);
     sidebarExpandBtn.classList.toggle('is-visible', collapsed);
+    if (!collapsed && wasCollapsed) {
+        playSidebarReveal();
+    }
     refreshWorkspaceLayout();
 }
 
@@ -253,13 +271,13 @@ function renderFolders() {
     const totalPrompts = folders.reduce((sum, f) => sum + f.prompts.length, 0);
     promptCount.textContent = `${totalPrompts} prompt${totalPrompts !== 1 ? 's' : ''}`;
 
-    folderList.innerHTML = folders.map(folder => {
+    folderList.innerHTML = folders.map((folder, index) => {
         const colorDot = folder.color
             ? `<span class="folder-color-dot" style="background:${folder.color}"></span>`
             : '';
         return `
         <div class="folder-item ${folder.id === activeFolderId ? 'active' : ''}"
-             data-id="${folder.id}" draggable="true">
+             data-id="${folder.id}" draggable="true" style="--stagger:${index + 1}">
           ${colorDot}
           <svg class="folder-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
@@ -920,7 +938,7 @@ $('#recorderSave').addEventListener('click', async () => {
 
 async function updateWorkspaceBackground(filename) {
     await invoke('set_background_image', { area: 'main', filename });
-    const settings = await invoke('set_background_image', { area: 'sidebar', filename: '' });
+    const settings = await invoke('set_background_image', { area: 'sidebar', filename });
     await hydrateSettings(settings);
 }
 
@@ -979,61 +997,111 @@ function createRipple(target, clientX, clientY) {
     ripple.addEventListener('animationend', () => ripple.remove(), { once: true });
 }
 
+function createAmbientPulse(clientX, clientY) {
+    const pulse = document.createElement('span');
+    pulse.className = 'ui-ambient-pulse';
+    pulse.style.left = `${clientX}px`;
+    pulse.style.top = `${clientY}px`;
+    document.body.appendChild(pulse);
+    pulse.addEventListener('animationend', () => pulse.remove(), { once: true });
+}
+
 document.addEventListener('pointerdown', (e) => {
+    if (e.button !== 0) return;
     const target = e.target.closest(rippleSelector);
-    if (!target) return;
-    createRipple(target, e.clientX, e.clientY);
+    if (target) {
+        createRipple(target, e.clientX, e.clientY);
+        return;
+    }
+
+    if (e.target.closest('input, textarea, select, option, [contenteditable="true"]')) return;
+    createAmbientPulse(e.clientX, e.clientY);
 });
 
 // ─── Theme Transition ──────────────────────────────────────────
 let isThemeTransitioning = false;
 
+function getThemeRevealMetrics(triggerEl) {
+    const rect = triggerEl.getBoundingClientRect();
+    const originX = rect.left + rect.width / 2;
+    const originY = rect.top + rect.height / 2;
+    const maxX = Math.max(originX, window.innerWidth - originX);
+    const maxY = Math.max(originY, window.innerHeight - originY);
+    const radius = Math.hypot(maxX, maxY);
+    return { originX, originY, radius };
+}
+
+function applyThemeState(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    appSettings.theme = theme;
+}
+
 async function toggleThemeWithReveal(triggerEl) {
-    if (isThemeTransitioning || !themeTransitionLayer) return;
+    if (isThemeTransitioning) return;
 
     const html = document.documentElement;
     const current = html.getAttribute('data-theme');
     const next = current === 'dark' ? 'light' : 'dark';
-    const rect = triggerEl.getBoundingClientRect();
-    const originX = rect.left + rect.width / 2;
-    const originY = rect.top + rect.height / 2;
+    const { originX, originY, radius } = getThemeRevealMetrics(triggerEl);
 
-    themeTransitionLayer.style.setProperty('--theme-reveal-x', `${originX}px`);
-    themeTransitionLayer.style.setProperty('--theme-reveal-y', `${originY}px`);
-    themeTransitionLayer.className = `theme-transition-layer to-${next}`;
+    html.style.setProperty('--theme-reveal-x', `${originX}px`);
+    html.style.setProperty('--theme-reveal-y', `${originY}px`);
+    html.style.setProperty('--theme-reveal-radius', `${radius}px`);
 
     isThemeTransitioning = true;
     triggerEl.classList.add('is-busy');
 
-    void themeTransitionLayer.offsetWidth;
-
-    requestAnimationFrame(() => {
-        themeTransitionLayer.classList.add('is-prepared');
-        requestAnimationFrame(() => {
-            themeTransitionLayer.classList.add('is-expanding');
-        });
-    });
-
-    window.setTimeout(() => {
-        html.setAttribute('data-theme', next);
-        appSettings.theme = next;
-    }, 220);
-
     try {
+        if (typeof document.startViewTransition === 'function') {
+            const transition = document.startViewTransition(() => {
+                applyThemeState(next);
+            });
+
+            await transition.ready;
+            html.classList.add('theme-view-transition-active');
+
+            const reveal = document.documentElement.animate(
+                {
+                    clipPath: [
+                        `circle(0px at ${originX}px ${originY}px)`,
+                        `circle(${radius}px at ${originX}px ${originY}px)`,
+                    ],
+                },
+                {
+                    duration: 620,
+                    easing: 'cubic-bezier(0.22, 1, 0.36, 1)',
+                    pseudoElement: '::view-transition-new(root)',
+                }
+            );
+
+            await Promise.allSettled([transition.finished, reveal.finished]);
+            html.classList.remove('theme-view-transition-active');
+        } else if (themeTransitionLayer) {
+            themeTransitionLayer.style.setProperty('--theme-reveal-x', `${originX}px`);
+            themeTransitionLayer.style.setProperty('--theme-reveal-y', `${originY}px`);
+            themeTransitionLayer.className = `theme-transition-layer to-${next}`;
+            void themeTransitionLayer.offsetWidth;
+            themeTransitionLayer.classList.add('is-prepared');
+            applyThemeState(next);
+            requestAnimationFrame(() => themeTransitionLayer.classList.add('is-expanding'));
+            await new Promise(resolve => setTimeout(resolve, 620));
+            themeTransitionLayer.className = 'theme-transition-layer';
+        } else {
+            applyThemeState(next);
+        }
+
         await invoke('set_theme', { theme: next });
     } catch (error) {
         console.error('Failed to persist theme:', error);
-    }
-
-    window.setTimeout(() => {
-        themeTransitionLayer.classList.add('is-fading');
-    }, 430);
-
-    window.setTimeout(() => {
-        themeTransitionLayer.className = 'theme-transition-layer';
+        applyThemeState(next);
+    } finally {
+        html.classList.remove('theme-view-transition-active');
+        if (themeTransitionLayer) {
+            themeTransitionLayer.className = 'theme-transition-layer';
+        }
         triggerEl.classList.remove('is-busy');
         isThemeTransitioning = false;
-    }, 860);
+    }
 }
 
 document.addEventListener('keydown', (e) => {
@@ -1136,6 +1204,10 @@ async function init() {
     renderFolders();
     renderPrompts();
     setSidebarCollapsed(sidebar.classList.contains('collapsed'));
+    requestAnimationFrame(() => {
+        document.body.classList.remove('app-booting');
+        document.body.classList.add('app-ready');
+    });
 
     // Listen for data changes from Quick Save window
     if (window.__TAURI__ && window.__TAURI__.event) {
