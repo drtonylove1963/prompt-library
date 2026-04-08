@@ -1,9 +1,9 @@
 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <linearGradient id="pFill" x1="8.25" y1="3" x2="15.75" y2="21" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#8FC8FF"/>
-      <stop offset="1" stop-color="#4D80B7"/>
+    <linearGradient id="pFill" x1="7.4" y1="3" x2="16.4" y2="21" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#8EC8FF"/>
+      <stop offset="1" stop-color="#4E82BA"/>
     </linearGradient>
   </defs>
-  <path d="M7.65 3.35C7.65 2.93 7.98 2.6 8.4 2.6H12.48C16.26 2.6 19 5.17 19 8.76C19 12.36 16.24 14.94 12.45 14.94H10.65V20.15C10.65 20.57 10.32 20.9 9.9 20.9H8.4C7.98 20.9 7.65 20.57 7.65 20.15V3.35ZM10.65 5.53V12H12.34C14.47 12 15.98 10.79 15.98 8.76C15.98 6.76 14.49 5.53 12.37 5.53H10.65Z" fill="url(#pFill)"/>
+  <path d="M6.95 3.3C6.95 2.91 7.26 2.6 7.65 2.6H11.96C16.34 2.6 19.12 5.04 19.12 8.81C19.12 12.58 16.3 15.03 11.91 15.03H9.98V20.2C9.98 20.59 9.67 20.9 9.28 20.9H7.65C7.26 20.9 6.95 20.59 6.95 20.2V3.3ZM9.98 5.48V12.15H11.78C14.36 12.15 16.02 10.94 16.02 8.81C16.02 6.72 14.38 5.48 11.81 5.48H9.98Z" fill="url(#pFill)"/>
 </svg>

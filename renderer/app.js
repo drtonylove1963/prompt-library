@@ -69,6 +69,7 @@ const lightboxImg = $('#lightboxImg');
 const lightboxClose = $('#lightboxClose');
 const sidebar = $('#sidebar');
 const mainContent = $('#mainContent');
+const appLayout = $('.app-layout');
 const sidebarCollapseBtn = $('#sidebarCollapseBtn');
 const sidebarExpandBtn = $('#sidebarExpandBtn');
 const confirmOverlay = $('#confirmOverlay');
@@ -80,14 +81,10 @@ const sortMenu = $('#sortMenu');
 const sortBtn = $('#sortBtn');
 const charCount = $('#charCount');
 const charCounter = $('#charCounter');
-const sidebarBgPreview = $('#sidebarBgPreview');
-const sidebarBgStatus = $('#sidebarBgStatus');
-const sidebarBgUploadBtn = $('#sidebarBgUploadBtn');
-const sidebarBgClearBtn = $('#sidebarBgClearBtn');
-const mainBgPreview = $('#mainBgPreview');
-const mainBgStatus = $('#mainBgStatus');
-const mainBgUploadBtn = $('#mainBgUploadBtn');
-const mainBgClearBtn = $('#mainBgClearBtn');
+const workspaceBgPreview = $('#workspaceBgPreview');
+const workspaceBgStatus = $('#workspaceBgStatus');
+const workspaceBgUploadBtn = $('#workspaceBgUploadBtn');
+const workspaceBgClearBtn = $('#workspaceBgClearBtn');
 
 // ─── Helpers ───────────────────────────────────────────────────
 function escapeHtml(str) {
@@ -133,11 +130,12 @@ async function resolveStoredImageUrl(filename) {
     return path ? filePathToUrl(path) : '';
 }
 
-function applyPanelBackground(element, imageUrl) {
-    element.style.setProperty('--panel-bg-image', imageUrl ? `url("${escapeCssUrl(imageUrl)}")` : 'none');
+function applyWorkspaceBackground(imageUrl) {
+    document.body.style.setProperty('--workspace-bg-image', imageUrl ? `url("${escapeCssUrl(imageUrl)}")` : 'none');
 }
 
 function updateBackgroundPreview(previewEl, statusEl, clearBtn, imageUrl, hasImage, areaLabel) {
+    if (!previewEl || !statusEl || !clearBtn) return;
     previewEl.style.setProperty('--preview-image', imageUrl ? `url("${escapeCssUrl(imageUrl)}")` : 'none');
     previewEl.classList.toggle('is-empty', !hasImage);
 
@@ -151,16 +149,18 @@ function updateBackgroundPreview(previewEl, statusEl, clearBtn, imageUrl, hasIma
 }
 
 async function applyWorkspaceBackgrounds(settings = appSettings) {
-    const [sidebarUrl, mainUrl] = await Promise.all([
-        resolveStoredImageUrl(settings.sidebar_background),
-        resolveStoredImageUrl(settings.main_background),
-    ]);
+    const backgroundFilename = settings.main_background || settings.sidebar_background || '';
+    const backgroundUrl = await resolveStoredImageUrl(backgroundFilename);
 
-    applyPanelBackground(sidebar, sidebarUrl);
-    applyPanelBackground(mainContent, mainUrl);
-
-    updateBackgroundPreview(sidebarBgPreview, sidebarBgStatus, sidebarBgClearBtn, sidebarUrl, !!settings.sidebar_background, 'Left');
-    updateBackgroundPreview(mainBgPreview, mainBgStatus, mainBgClearBtn, mainUrl, !!settings.main_background, 'Right');
+    applyWorkspaceBackground(backgroundUrl);
+    updateBackgroundPreview(
+        workspaceBgPreview,
+        workspaceBgStatus,
+        workspaceBgClearBtn,
+        backgroundUrl,
+        !!backgroundFilename,
+        'Window'
+    );
 }
 
 async function hydrateSettings(settings) {
@@ -208,15 +208,26 @@ confirmOverlay.addEventListener('click', (e) => {
 });
 
 // ─── Sidebar Collapse / Expand ─────────────────────────────────
-sidebarCollapseBtn.addEventListener('click', () => {
-    sidebar.classList.add('collapsed');
-    sidebarExpandBtn.style.display = 'flex';
-});
+let layoutRefreshTimer = null;
 
-sidebarExpandBtn.addEventListener('click', () => {
-    sidebar.classList.remove('collapsed');
-    sidebarExpandBtn.style.display = 'none';
-});
+function refreshWorkspaceLayout() {
+    mainContent.classList.add('is-layout-shifting');
+    clearTimeout(layoutRefreshTimer);
+    layoutRefreshTimer = setTimeout(() => {
+        mainContent.classList.remove('is-layout-shifting');
+        window.dispatchEvent(new Event('resize'));
+    }, 320);
+}
+
+function setSidebarCollapsed(collapsed) {
+    sidebar.classList.toggle('collapsed', collapsed);
+    appLayout.classList.toggle('sidebar-collapsed', collapsed);
+    sidebarExpandBtn.classList.toggle('is-visible', collapsed);
+    refreshWorkspaceLayout();
+}
+
+sidebarCollapseBtn.addEventListener('click', () => setSidebarCollapsed(true));
+sidebarExpandBtn.addEventListener('click', () => setSidebarCollapsed(false));
 
 // ─── Lightbox ──────────────────────────────────────────────────
 function openLightbox(src) {
@@ -909,35 +920,71 @@ $('#recorderSave').addEventListener('click', async () => {
     stopRecording();
 });
 
-async function updateBackgroundSetting(area, filename) {
-    const settings = await invoke('set_background_image', { area, filename });
+async function updateWorkspaceBackground(filename) {
+    await invoke('set_background_image', { area: 'main', filename });
+    const settings = await invoke('set_background_image', { area: 'sidebar', filename: '' });
     await hydrateSettings(settings);
 }
 
-async function pickWorkspaceBackground(area) {
+async function pickWorkspaceBackground() {
     const result = await invoke('select_images');
     const image = Array.isArray(result) ? result[0] : null;
     if (!image || !image.filename) return;
 
-    await updateBackgroundSetting(area, image.filename);
-    showToast(area === 'sidebar' ? 'Left background updated!' : 'Right background updated!');
+    await updateWorkspaceBackground(image.filename);
+    showToast('Background updated!');
 }
 
-async function clearWorkspaceBackground(area) {
-    await updateBackgroundSetting(area, '');
-    showToast(area === 'sidebar' ? 'Left background removed!' : 'Right background removed!');
+async function clearWorkspaceBackground() {
+    await updateWorkspaceBackground('');
+    showToast('Background removed!');
 }
 
-sidebarBgUploadBtn.addEventListener('click', () => pickWorkspaceBackground('sidebar'));
-mainBgUploadBtn.addEventListener('click', () => pickWorkspaceBackground('main'));
-sidebarBgClearBtn.addEventListener('click', () => clearWorkspaceBackground('sidebar'));
-mainBgClearBtn.addEventListener('click', () => clearWorkspaceBackground('main'));
+workspaceBgUploadBtn?.addEventListener('click', () => pickWorkspaceBackground());
+workspaceBgClearBtn?.addEventListener('click', () => clearWorkspaceBackground());
 
 function stopRecording() {
     isRecording = false;
     shortcutRecorder.style.display = 'none';
     recordedShortcut = '';
 }
+
+// ─── Motion Enhancements ───────────────────────────────────────
+const rippleSelector = [
+    '.btn-primary',
+    '.btn-secondary',
+    '.btn-icon',
+    '.folder-item',
+    '.card-btn',
+    '.card-copy-main',
+    '.sort-option',
+    '.settings-close',
+    '.shortcut-record-btn',
+    '.settings-media-btn',
+    '.image-upload-btn',
+    '.theme-toggle',
+    '.win-btn',
+].join(', ');
+
+function createRipple(target, clientX, clientY) {
+    if (!target || target.disabled) return;
+    const rect = target.getBoundingClientRect();
+    const size = Math.max(rect.width, rect.height) * 1.8;
+    const ripple = document.createElement('span');
+    ripple.className = 'ui-ripple';
+    ripple.style.width = `${size}px`;
+    ripple.style.height = `${size}px`;
+    ripple.style.left = `${clientX - rect.left - size / 2}px`;
+    ripple.style.top = `${clientY - rect.top - size / 2}px`;
+    target.appendChild(ripple);
+    ripple.addEventListener('animationend', () => ripple.remove(), { once: true });
+}
+
+document.addEventListener('pointerdown', (e) => {
+    const target = e.target.closest(rippleSelector);
+    if (!target) return;
+    createRipple(target, e.clientX, e.clientY);
+});
 
 document.addEventListener('keydown', (e) => {
     if (!isRecording) return;
@@ -1023,13 +1070,7 @@ document.addEventListener('keydown', (e) => {
     // Ctrl+B → toggle sidebar
     if ((e.ctrlKey || e.metaKey) && e.key === 'b') {
         e.preventDefault();
-        if (sidebar.classList.contains('collapsed')) {
-            sidebar.classList.remove('collapsed');
-            sidebarExpandBtn.style.display = 'none';
-        } else {
-            sidebar.classList.add('collapsed');
-            sidebarExpandBtn.style.display = 'flex';
-        }
+        setSidebarCollapsed(!sidebar.classList.contains('collapsed'));
     }
 });
 
@@ -1044,6 +1085,7 @@ async function init() {
 
     renderFolders();
     renderPrompts();
+    setSidebarCollapsed(sidebar.classList.contains('collapsed'));
 
     // Listen for data changes from Quick Save window
     if (window.__TAURI__ && window.__TAURI__.event) {
