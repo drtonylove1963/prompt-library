@@ -47,12 +47,16 @@ pub struct AppData {
     pub glass_mode: String,
     #[serde(default = "default_surface_opacity")]
     pub surface_opacity: f32,
+    #[serde(default = "default_surface_brightness")]
+    pub surface_brightness: f32,
     #[serde(default = "default_card_opacity")]
     pub card_opacity: f32,
     #[serde(default = "default_glass_blur")]
     pub glass_blur: f32,
     #[serde(default = "default_background_visibility")]
     pub background_visibility: f32,
+    #[serde(default = "default_accent_color")]
+    pub accent_color: String,
 }
 
 fn default_shortcut() -> String {
@@ -67,6 +71,10 @@ fn default_surface_opacity() -> f32 {
     0.82
 }
 
+fn default_surface_brightness() -> f32 {
+    1.0
+}
+
 fn default_card_opacity() -> f32 {
     0.78
 }
@@ -77,6 +85,20 @@ fn default_glass_blur() -> f32 {
 
 fn default_background_visibility() -> f32 {
     0.24
+}
+
+fn default_accent_color() -> String {
+    "#79BFFF".into()
+}
+
+fn normalize_accent_color(value: &str) -> String {
+    let trimmed = value.trim();
+    let hex = trimmed.strip_prefix('#').unwrap_or(trimmed);
+    if hex.len() == 6 && hex.chars().all(|c| c.is_ascii_hexdigit()) {
+        format!("#{}", hex.to_uppercase())
+    } else {
+        default_accent_color()
+    }
 }
 
 impl Default for AppData {
@@ -129,9 +151,11 @@ impl Default for AppData {
             main_background: String::new(),
             glass_mode: default_glass_mode(),
             surface_opacity: default_surface_opacity(),
+            surface_brightness: default_surface_brightness(),
             card_opacity: default_card_opacity(),
             glass_blur: default_glass_blur(),
             background_visibility: default_background_visibility(),
+            accent_color: default_accent_color(),
         }
     }
 }
@@ -521,9 +545,11 @@ pub struct Settings {
     pub main_background: String,
     pub glass_mode: String,
     pub surface_opacity: f32,
+    pub surface_brightness: f32,
     pub card_opacity: f32,
     pub glass_blur: f32,
     pub background_visibility: f32,
+    pub accent_color: String,
 }
 
 fn snapshot_settings(data: &AppData) -> Settings {
@@ -534,9 +560,11 @@ fn snapshot_settings(data: &AppData) -> Settings {
         main_background: data.main_background.clone(),
         glass_mode: data.glass_mode.clone(),
         surface_opacity: data.surface_opacity,
+        surface_brightness: data.surface_brightness,
         card_opacity: data.card_opacity,
         glass_blur: data.glass_blur,
         background_visibility: data.background_visibility,
+        accent_color: data.accent_color.clone(),
     }
 }
 
@@ -589,22 +617,23 @@ fn set_background_image(state: State<'_, AppState>, area: String, filename: Stri
 #[tauri::command]
 fn set_glass_settings(
     state: State<'_, AppState>,
-    glass_mode: String,
+    _glass_mode: String,
     surface_opacity: f32,
+    surface_brightness: f32,
     card_opacity: f32,
     glass_blur: f32,
     background_visibility: f32,
+    accent_color: String,
 ) -> Settings {
     let settings = {
         let mut data = state.data.lock().unwrap();
-        data.glass_mode = match glass_mode.as_str() {
-            "classic" => "classic".into(),
-            _ => "apple".into(),
-        };
-        data.surface_opacity = surface_opacity.clamp(0.14, 0.98);
+        data.glass_mode = "apple".into();
+        data.surface_opacity = surface_opacity.clamp(0.08, 0.98);
+        data.surface_brightness = surface_brightness.clamp(0.72, 1.38);
         data.card_opacity = card_opacity.clamp(0.18, 0.96);
         data.glass_blur = glass_blur.clamp(6.0, 26.0);
-        data.background_visibility = background_visibility.clamp(0.0, 0.96);
+        data.background_visibility = background_visibility.clamp(0.0, 1.0);
+        data.accent_color = normalize_accent_color(&accent_color);
         snapshot_settings(&data)
     };
     state.save();
@@ -614,23 +643,24 @@ fn set_glass_settings(
 #[tauri::command]
 fn set_appearance_settings(
     state: State<'_, AppState>,
-    glass_mode: String,
+    _glass_mode: String,
     surface_opacity: f32,
+    surface_brightness: f32,
     card_opacity: f32,
     glass_blur: f32,
     background_visibility: f32,
+    accent_color: String,
     background_filename: String,
 ) -> Settings {
     let settings = {
         let mut data = state.data.lock().unwrap();
-        data.glass_mode = match glass_mode.as_str() {
-            "classic" => "classic".into(),
-            _ => "apple".into(),
-        };
-        data.surface_opacity = surface_opacity.clamp(0.14, 0.98);
+        data.glass_mode = "apple".into();
+        data.surface_opacity = surface_opacity.clamp(0.08, 0.98);
+        data.surface_brightness = surface_brightness.clamp(0.72, 1.38);
         data.card_opacity = card_opacity.clamp(0.18, 0.96);
         data.glass_blur = glass_blur.clamp(6.0, 26.0);
-        data.background_visibility = background_visibility.clamp(0.0, 0.96);
+        data.background_visibility = background_visibility.clamp(0.0, 1.0);
+        data.accent_color = normalize_accent_color(&accent_color);
         data.main_background = background_filename.clone();
         data.sidebar_background = background_filename;
         snapshot_settings(&data)

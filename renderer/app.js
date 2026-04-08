@@ -40,9 +40,11 @@ let appSettings = {
     main_background: '',
     glass_mode: 'apple',
     surface_opacity: 0.82,
+    surface_brightness: 1,
     card_opacity: 0.78,
     glass_blur: 14,
     background_visibility: 0.24,
+    accent_color: '#79BFFF',
 };
 let settingsDraft = null;
 let settingsDirty = false;
@@ -97,10 +99,14 @@ const themeTransitionLayer = $('#themeTransitionLayer');
 const appBackground = $('#appBackground');
 const themeToggleBtn = $('#themeToggle');
 const surfaceGlassSlider = $('#surfaceGlassSlider');
+const surfaceBrightnessSlider = $('#surfaceBrightnessSlider');
 const bgVisibilitySlider = $('#bgVisibilitySlider');
 const surfaceGlassValue = $('#surfaceGlassValue');
+const surfaceBrightnessValue = $('#surfaceBrightnessValue');
 const bgVisibilityValue = $('#bgVisibilityValue');
-const glassStyleOptions = $$('[data-glass-style-option]');
+const accentColorPicker = $('#accentColorPicker');
+const accentColorValue = $('#accentColorValue');
+const accentColorChip = $('#accentColorChip');
 
 // ─── Helpers ───────────────────────────────────────────────────
 function escapeHtml(str) {
@@ -144,6 +150,39 @@ function clampNumber(value, min, max, fallback) {
     const number = Number(value);
     if (!Number.isFinite(number)) return fallback;
     return Math.min(max, Math.max(min, number));
+}
+
+function sanitizeHexColor(value, fallback = '#79BFFF') {
+    const normalized = String(value || '').trim();
+    const match = normalized.match(/^#?([0-9a-fA-F]{6})$/);
+    if (!match) return fallback.toUpperCase();
+    return `#${match[1].toUpperCase()}`;
+}
+
+function hexToRgb(hex) {
+    const normalized = sanitizeHexColor(hex).slice(1);
+    return {
+        r: parseInt(normalized.slice(0, 2), 16),
+        g: parseInt(normalized.slice(2, 4), 16),
+        b: parseInt(normalized.slice(4, 6), 16),
+    };
+}
+
+function mixRgb(a, b, weight = 0.5) {
+    const amount = clampNumber(weight, 0, 1, 0.5);
+    return {
+        r: Math.round(a.r + (b.r - a.r) * amount),
+        g: Math.round(a.g + (b.g - a.g) * amount),
+        b: Math.round(a.b + (b.b - a.b) * amount),
+    };
+}
+
+function rgbToCss(rgb) {
+    return `rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`;
+}
+
+function rgbaToCss(rgb, alpha) {
+    return `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${alpha})`;
 }
 
 async function resolveStoredImageUrl(filename) {
@@ -196,74 +235,127 @@ async function applyWorkspaceBackgrounds(settings = appSettings) {
 }
 
 function normalizeGlassSettings(settings = appSettings) {
-    const glassMode = settings.glass_mode === 'classic' ? 'classic' : 'apple';
-    const surfaceOpacity = clampNumber(settings.surface_opacity, 0.14, 0.98, 0.82);
-    const backgroundVisibility = clampNumber(settings.background_visibility, 0, 0.96, 0.24);
-    const revealRatio = backgroundVisibility / 0.96;
+    const glassMode = 'apple';
+    const surfaceOpacity = clampNumber(settings.surface_opacity, 0.08, 0.98, 0.82);
+    const surfaceBrightness = clampNumber(settings.surface_brightness, 0.72, 1.38, 1);
+    const backgroundVisibility = clampNumber(settings.background_visibility, 0, 1, 0.24);
+    const revealRatio = backgroundVisibility;
+    const brightnessRatio = clampNumber((surfaceBrightness - 0.72) / 0.66, 0, 1, 0.42);
     const cardOpacity = clampNumber(
-        surfaceOpacity + (glassMode === 'classic' ? 0.08 : 0.05) - revealRatio * 0.08,
+        surfaceOpacity + 0.04 - revealRatio * 0.07,
         0.18,
         0.96,
         0.78
     );
     const glassBlur = Math.round(clampNumber(
-        (glassMode === 'classic' ? 10 : 14) + (1 - revealRatio) * 8 + surfaceOpacity * 4,
+        9 + (1 - revealRatio) * 7 + surfaceOpacity * 5 + (surfaceBrightness - 1) * 10,
         6,
         26,
         14
     ));
+    const accentColor = sanitizeHexColor(settings.accent_color, '#79BFFF');
+    const glassEdgeOpacity = clampNumber(0.08 + brightnessRatio * 0.08, 0.08, 0.18, 0.14);
+    const glassHighlightOpacity = clampNumber(0.1 + brightnessRatio * 0.16, 0.1, 0.28, 0.18);
+    const surfaceTopGlowOpacity = clampNumber(0.04 + brightnessRatio * 0.15, 0.04, 0.2, 0.08);
 
     return {
         ...settings,
         glass_mode: glassMode,
         surface_opacity: surfaceOpacity,
+        surface_brightness: surfaceBrightness,
         card_opacity: cardOpacity,
         glass_blur: glassBlur,
         background_visibility: backgroundVisibility,
+        accent_color: accentColor,
+        glass_edge_opacity: glassEdgeOpacity,
+        glass_highlight_opacity: glassHighlightOpacity,
+        surface_top_glow_opacity: surfaceTopGlowOpacity,
     };
 }
 
 function syncGlassControls(settings = appSettings) {
     const normalized = normalizeGlassSettings(settings);
     const surfaceOpacity = Math.round(normalized.surface_opacity * 100);
+    const surfaceBrightness = Math.round(normalized.surface_brightness * 100);
     const backgroundVisibility = Math.round(normalized.background_visibility * 100);
-    const glassMode = normalized.glass_mode;
+    const accentColor = normalized.accent_color;
 
     if (surfaceGlassSlider) surfaceGlassSlider.value = String(surfaceOpacity);
+    if (surfaceBrightnessSlider) surfaceBrightnessSlider.value = String(surfaceBrightness);
     if (bgVisibilitySlider) bgVisibilitySlider.value = String(backgroundVisibility);
+    if (accentColorPicker) accentColorPicker.value = accentColor.toLowerCase();
 
     if (surfaceGlassValue) surfaceGlassValue.textContent = `${surfaceOpacity}%`;
+    if (surfaceBrightnessValue) surfaceBrightnessValue.textContent = `${surfaceBrightness}%`;
     if (bgVisibilityValue) bgVisibilityValue.textContent = `${backgroundVisibility}%`;
+    if (accentColorValue) accentColorValue.textContent = accentColor;
+    if (accentColorChip) accentColorChip.style.background = accentColor;
+}
 
-    glassStyleOptions.forEach((option) => {
-        option.classList.toggle('active', option.dataset.glassStyleOption === glassMode);
-    });
+function applyAccentColor(settings = appSettings) {
+    const accentColor = sanitizeHexColor(settings.accent_color, '#79BFFF');
+    const base = hexToRgb(accentColor);
+    const white = { r: 255, g: 255, b: 255 };
+    const deepBlue = { r: 25, g: 58, b: 108 };
+    const inkBlue = { r: 23, g: 50, b: 78 };
+    const accentHover = mixRgb(base, white, 0.12);
+    const accentText = document.documentElement.getAttribute('data-theme') === 'light'
+        ? rgbToCss(mixRgb(base, inkBlue, 0.58))
+        : rgbToCss(mixRgb(base, white, 0.5));
+    const buttonStart = mixRgb(base, white, 0.28);
+    const buttonMid = mixRgb(base, white, 0.1);
+    const buttonEnd = mixRgb(base, deepBlue, 0.24);
+    const buttonStartHover = mixRgb(buttonStart, white, 0.12);
+    const buttonMidHover = mixRgb(buttonMid, white, 0.1);
+    const buttonEndHover = mixRgb(buttonEnd, white, 0.08);
+
+    document.documentElement.style.setProperty('--accent', accentColor);
+    document.documentElement.style.setProperty('--accent-hover', rgbToCss(accentHover));
+    document.documentElement.style.setProperty('--accent-subtle', rgbaToCss(base, 0.14));
+    document.documentElement.style.setProperty('--accent-glow', rgbaToCss(base, 0.2));
+    document.documentElement.style.setProperty('--accent-text', accentText);
+    document.documentElement.style.setProperty('--accent-ring', rgbaToCss(base, 0.24));
+    document.documentElement.style.setProperty(
+        '--button-accent',
+        `linear-gradient(180deg, rgba(255, 255, 255, 0.24) 0%, rgba(255, 255, 255, 0.06) 34%, rgba(255, 255, 255, 0) 100%), linear-gradient(180deg, ${rgbToCss(buttonStart)} 0%, ${rgbToCss(buttonMid)} 48%, ${rgbToCss(buttonEnd)} 100%)`
+    );
+    document.documentElement.style.setProperty(
+        '--button-accent-hover',
+        `linear-gradient(180deg, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0.08) 34%, rgba(255, 255, 255, 0) 100%), linear-gradient(180deg, ${rgbToCss(buttonStartHover)} 0%, ${rgbToCss(buttonMidHover)} 48%, ${rgbToCss(buttonEndHover)} 100%)`
+    );
 }
 
 function applyGlassSettings(settings = appSettings) {
     const normalizedSettings = normalizeGlassSettings(settings);
-    const glassMode = normalizedSettings.glass_mode;
     const surfaceOpacity = normalizedSettings.surface_opacity;
     const cardOpacity = normalizedSettings.card_opacity;
     const glassBlur = normalizedSettings.glass_blur;
     const backgroundVisibility = normalizedSettings.background_visibility;
+    const glassEdgeOpacity = normalizedSettings.glass_edge_opacity;
+    const glassHighlightOpacity = normalizedSettings.glass_highlight_opacity;
+    const surfaceTopGlowOpacity = normalizedSettings.surface_top_glow_opacity;
 
-    document.documentElement.setAttribute('data-glass-style', glassMode);
+    document.documentElement.removeAttribute('data-glass-style');
     document.documentElement.style.setProperty('--surface-glass-opacity', surfaceOpacity.toFixed(2));
     document.documentElement.style.setProperty('--card-glass-opacity', cardOpacity.toFixed(2));
     document.documentElement.style.setProperty('--glass-blur-strength', `${glassBlur}px`);
     document.documentElement.style.setProperty('--background-image-strength', backgroundVisibility.toFixed(2));
+    document.documentElement.style.setProperty('--glass-edge-opacity', glassEdgeOpacity.toFixed(2));
+    document.documentElement.style.setProperty('--glass-highlight-opacity', glassHighlightOpacity.toFixed(2));
+    document.documentElement.style.setProperty('--surface-top-glow-opacity', surfaceTopGlowOpacity.toFixed(2));
 
+    applyAccentColor(normalizedSettings);
     syncGlassControls(normalizedSettings);
     return normalizedSettings;
 }
 
 function collectGlassSettingsFromControls() {
-    const activeStyle = Array.from(glassStyleOptions).find((option) => option.classList.contains('active'));
     return normalizeGlassSettings({
-        glass_mode: activeStyle?.dataset.glassStyleOption === 'classic' ? 'classic' : 'apple',
-        surface_opacity: clampNumber((surfaceGlassSlider?.value || 82) / 100, 0.14, 0.98, 0.82),
-        background_visibility: clampNumber((bgVisibilitySlider?.value || 24) / 100, 0, 0.96, 0.24),
+        glass_mode: 'apple',
+        surface_opacity: clampNumber((surfaceGlassSlider?.value || 82) / 100, 0.08, 0.98, 0.82),
+        surface_brightness: clampNumber((surfaceBrightnessSlider?.value || 100) / 100, 0.72, 1.38, 1),
+        background_visibility: clampNumber((bgVisibilitySlider?.value || 24) / 100, 0, 1, 0.24),
+        accent_color: sanitizeHexColor(accentColorPicker?.value, '#79BFFF'),
     });
 }
 
@@ -1045,11 +1137,13 @@ async function saveSettingsChanges() {
 
     try {
         const payload = {
-            glassMode: settingsDraft.glass_mode,
+            glassMode: 'apple',
             surfaceOpacity: settingsDraft.surface_opacity,
+            surfaceBrightness: settingsDraft.surface_brightness,
             cardOpacity: settingsDraft.card_opacity,
             glassBlur: settingsDraft.glass_blur,
             backgroundVisibility: settingsDraft.background_visibility,
+            accentColor: settingsDraft.accent_color,
             backgroundFilename: pendingWorkspaceBackground,
         };
 
@@ -1160,16 +1254,11 @@ function previewGlassSettings() {
     setSettingsDirty(true);
 }
 
-glassStyleOptions.forEach((option) => {
-    option.addEventListener('click', () => {
-        glassStyleOptions.forEach((item) => item.classList.toggle('active', item === option));
-        previewGlassSettings();
-    });
-});
-
-[surfaceGlassSlider, bgVisibilitySlider].forEach((slider) => {
+[surfaceGlassSlider, surfaceBrightnessSlider, bgVisibilitySlider].forEach((slider) => {
     slider?.addEventListener('input', previewGlassSettings);
 });
+
+accentColorPicker?.addEventListener('input', previewGlassSettings);
 
 function stopRecording() {
     isRecording = false;
@@ -1247,6 +1336,7 @@ function getThemeRevealMetrics(triggerEl) {
 function applyThemeState(theme) {
     document.documentElement.setAttribute('data-theme', theme);
     appSettings.theme = theme;
+    applyAccentColor(settingsDraft || appSettings);
 }
 
 async function toggleThemeWithReveal(triggerEl) {

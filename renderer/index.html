@@ -122,27 +122,37 @@
             Surface Glass
           </div>
           <div class="glass-settings">
-            <div class="settings-helper">Keep it simple: choose a style, then control how much of the image shows through.</div>
-            <div class="glass-style-row">
-              <span class="settings-label">Material Style</span>
-              <div class="segmented-control" id="glassStyleControl">
-                <button type="button" class="segmented-option active" data-glass-style-option="apple">Apple Edge</button>
-                <button type="button" class="segmented-option" data-glass-style-option="classic">Classic Glass</button>
-              </div>
-            </div>
+            <div class="settings-helper">One clean glass look. Adjust opacity, brightness, accent, and how much of the background shows through.</div>
             <label class="glass-slider-row" for="surfaceGlassSlider">
               <div class="glass-slider-copy">
                 <span class="settings-label">Surface Opacity</span>
                 <span class="glass-slider-value" id="surfaceGlassValue">82%</span>
               </div>
-              <input type="range" id="surfaceGlassSlider" min="14" max="98" step="1" value="82">
+              <input type="range" id="surfaceGlassSlider" min="8" max="98" step="1" value="82">
+            </label>
+            <label class="glass-slider-row" for="surfaceBrightnessSlider">
+              <div class="glass-slider-copy">
+                <span class="settings-label">Surface Brightness</span>
+                <span class="glass-slider-value" id="surfaceBrightnessValue">100%</span>
+              </div>
+              <input type="range" id="surfaceBrightnessSlider" min="72" max="138" step="1" value="100">
             </label>
             <label class="glass-slider-row" for="bgVisibilitySlider">
               <div class="glass-slider-copy">
                 <span class="settings-label">Background Reveal</span>
                 <span class="glass-slider-value" id="bgVisibilityValue">24%</span>
               </div>
-              <input type="range" id="bgVisibilitySlider" min="0" max="96" step="1" value="24">
+              <input type="range" id="bgVisibilitySlider" min="0" max="100" step="1" value="24">
+            </label>
+            <label class="accent-color-row" for="accentColorPicker">
+              <div class="glass-slider-copy">
+                <span class="settings-label">Design Color</span>
+                <span class="glass-slider-value" id="accentColorValue">#79BFFF</span>
+              </div>
+              <div class="accent-color-control">
+                <span class="accent-color-chip" id="accentColorChip" aria-hidden="true"></span>
+                <input type="color" id="accentColorPicker" value="#79bfff">
+              </div>
             </label>
           </div>
         </div>
@@ -175,7 +185,7 @@
         </div>
       </div>
       <div class="settings-footer">
-        <div class="settings-footer-note" id="settingsSaveState">Live preview. Save to keep it.</div>
+        <div class="settings-footer-note" id="settingsSaveState">Preview updates instantly. Save to keep it.</div>
         <div class="settings-footer-actions">
           <button class="btn-secondary settings-action-btn" id="settingsCancelBtn" type="button">Cancel</button>
           <button class="btn-primary settings-action-btn" id="settingsSaveBtn" type="button" disabled>Save Changes</button>
