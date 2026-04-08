@@ -1,11 +1,11 @@
-<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <linearGradient id="pFill" x1="150" y1="86" x2="356" y2="406" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#F5FAFF"/>
-      <stop offset="0.42" stop-color="#DCE8F6"/>
-      <stop offset="1" stop-color="#A4BEDA"/>
+    <linearGradient id="pStroke" x1="7.75" y1="4" x2="16.5" y2="19.5" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#F7FAFF"/>
+      <stop offset="0.46" stop-color="#DBE5F3"/>
+      <stop offset="1" stop-color="#A5BDD6"/>
     </linearGradient>
   </defs>
-  <rect x="152" y="86" width="66" height="340" rx="33" fill="url(#pFill)"/>
-  <path d="M206 100H262C320.542 100 368 147.458 368 206C368 264.542 320.542 312 262 312H206V252H259C284.405 252 305 231.405 305 206C305 180.595 284.405 160 259 160H206V100Z" fill="url(#pFill)"/>
+  <path d="M8.15 4.25V19.75" stroke="url(#pStroke)" stroke-width="2.8" stroke-linecap="round"/>
+  <path d="M8.15 4.25H12.8C15.097 4.25 16.95 6.103 16.95 8.4C16.95 10.697 15.097 12.55 12.8 12.55H8.15" stroke="url(#pStroke)" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>

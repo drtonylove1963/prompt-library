@@ -567,6 +567,7 @@ fn open_quicksave_window(app: &AppHandle) {
     .inner_size(460.0, 520.0)
     .resizable(false)
     .decorations(false)
+    .skip_taskbar(true)
     .always_on_top(true)
     .center()
     .build();

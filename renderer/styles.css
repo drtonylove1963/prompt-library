@@ -4004,3 +4004,64 @@ body::after {
 [data-theme="light"] .settings-media-card {
   background: rgba(255, 255, 255, 0.48) !important;
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   Light Mode Polish
+   Restore contrast for selected folders, timestamps, and elevated surfaces
+   ═══════════════════════════════════════════════════════════════ */
+
+[data-theme="light"] .folder-item {
+  background: rgba(255, 255, 255, 0.34);
+}
+
+[data-theme="light"] .folder-item:hover {
+  background: rgba(255, 255, 255, 0.56);
+}
+
+[data-theme="light"] .folder-item .folder-name {
+  color: #28415d;
+}
+
+[data-theme="light"] .folder-item .folder-icon {
+  color: #6e86a2;
+}
+
+[data-theme="light"] .folder-item .folder-count {
+  color: #627b98;
+  background: rgba(244, 247, 251, 0.92);
+  border-color: rgba(125, 145, 170, 0.14);
+}
+
+[data-theme="light"] .folder-item.active {
+  background: linear-gradient(180deg, rgba(219, 230, 243, 0.96) 0%, rgba(231, 238, 248, 0.98) 100%) !important;
+  border-color: rgba(124, 147, 174, 0.2) !important;
+  box-shadow: 0 12px 22px rgba(176, 188, 208, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.76) !important;
+  color: #17324d !important;
+}
+
+[data-theme="light"] .folder-item.active .folder-name {
+  color: #17324d !important;
+}
+
+[data-theme="light"] .folder-item.active .folder-icon {
+  color: #4b7db1 !important;
+}
+
+[data-theme="light"] .folder-item.active .folder-count {
+  color: #4a6d94 !important;
+  background: rgba(255, 255, 255, 0.8) !important;
+  border-color: rgba(125, 145, 170, 0.16) !important;
+}
+
+[data-theme="light"] .card-date {
+  color: #7387a0 !important;
+  opacity: 1 !important;
+}
+
+[data-theme="light"] .tag {
+  color: #2d5d93;
+}
+
+[data-theme="light"] .titlebar-logo-shell {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.74);
+}
