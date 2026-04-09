@@ -407,6 +407,7 @@ confirmOverlay.addEventListener('click', (e) => {
 // ─── Sidebar Collapse / Expand ─────────────────────────────────
 let layoutRefreshTimer = null;
 let sidebarRevealTimer = null;
+let workspaceTransitionTimer = null;
 
 function refreshWorkspaceLayout() {
     mainContent.classList.add('is-layout-shifting');
@@ -425,6 +426,20 @@ function playSidebarReveal() {
     sidebarRevealTimer = setTimeout(() => {
         sidebar.classList.remove('is-revealing');
     }, 520);
+}
+
+function runWorkspaceTransition(updateFn) {
+    if (typeof updateFn !== 'function') return;
+    clearTimeout(workspaceTransitionTimer);
+    mainContent.classList.add('is-content-switching');
+    promptGrid.classList.add('is-content-switching');
+    updateFn();
+    requestAnimationFrame(() => {
+        workspaceTransitionTimer = setTimeout(() => {
+            mainContent.classList.remove('is-content-switching');
+            promptGrid.classList.remove('is-content-switching');
+        }, 340);
+    });
 }
 
 function setSidebarCollapsed(collapsed) {
@@ -482,9 +497,12 @@ function renderFolders() {
     // Click + context menu handlers
     folderList.querySelectorAll('.folder-item').forEach(el => {
         el.addEventListener('click', () => {
+            if (activeFolderId === el.dataset.id) return;
+            runWorkspaceTransition(() => {
             activeFolderId = el.dataset.id;
             renderFolders();
             renderPrompts();
+            });
         });
         el.addEventListener('contextmenu', (e) => {
             e.preventDefault();
@@ -998,7 +1016,9 @@ sortMenu.querySelectorAll('.sort-option').forEach(opt => {
         sortMenu.querySelectorAll('.sort-option').forEach(o => o.classList.remove('active'));
         opt.classList.add('active');
         sortMenu.classList.remove('visible');
-        renderPrompts();
+        runWorkspaceTransition(() => {
+            renderPrompts();
+        });
     });
 });
 
@@ -1355,39 +1375,18 @@ async function toggleThemeWithReveal(triggerEl) {
     triggerEl.classList.add('is-busy');
 
     try {
-        if (typeof document.startViewTransition === 'function') {
-            const transition = document.startViewTransition(() => {
-                applyThemeState(next);
-            });
-
-            await transition.ready;
-            html.classList.add('theme-view-transition-active');
-
-            const reveal = document.documentElement.animate(
-                {
-                    clipPath: [
-                        `circle(0px at ${originX}px ${originY}px)`,
-                        `circle(${radius}px at ${originX}px ${originY}px)`,
-                    ],
-                },
-                {
-                    duration: 620,
-                    easing: 'cubic-bezier(0.22, 1, 0.36, 1)',
-                    pseudoElement: '::view-transition-new(root)',
-                }
-            );
-
-            await Promise.allSettled([transition.finished, reveal.finished]);
-            html.classList.remove('theme-view-transition-active');
-        } else if (themeTransitionLayer) {
+        if (themeTransitionLayer) {
             themeTransitionLayer.style.setProperty('--theme-reveal-x', `${originX}px`);
             themeTransitionLayer.style.setProperty('--theme-reveal-y', `${originY}px`);
             themeTransitionLayer.className = `theme-transition-layer to-${next}`;
             void themeTransitionLayer.offsetWidth;
             themeTransitionLayer.classList.add('is-prepared');
+            await new Promise(resolve => requestAnimationFrame(resolve));
             applyThemeState(next);
             requestAnimationFrame(() => themeTransitionLayer.classList.add('is-expanding'));
             await new Promise(resolve => setTimeout(resolve, 620));
+            themeTransitionLayer.classList.add('is-fading');
+            await new Promise(resolve => setTimeout(resolve, 180));
             themeTransitionLayer.className = 'theme-transition-layer';
         } else {
             applyThemeState(next);
