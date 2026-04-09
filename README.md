@@ -41,19 +41,9 @@
 
 ## Install
 
-### Download
+There are currently no published GitHub Releases for Prompt Library yet.
 
-Head to [Releases](../../releases) and grab the installer for your OS:
-
-| Platform | File |
-|----------|------|
-| Windows | `Prompt.Library_x.x.x_x64-setup.exe` |
-| macOS (Apple Silicon) | `Prompt.Library_x.x.x_aarch64.dmg` |
-| macOS (Intel) | `Prompt.Library_x.x.x_x64.dmg` |
-
-Run it, done.
-
-### Build from source
+For now, install it by building from source:
 
 You need [Rust](https://rustup.rs), [Node.js 18+](https://nodejs.org), and `cargo install tauri-cli`.
 
@@ -75,6 +65,8 @@ cargo tauri build      # build the installer
 ```
 
 The installer ends up in `src-tauri/target/release/bundle/`.
+
+Once official GitHub Releases are published, this section will point to them directly.
 
 ---
 
