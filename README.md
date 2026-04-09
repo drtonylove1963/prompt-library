@@ -41,9 +41,9 @@
 
 ## Install
 
-There are currently no published GitHub Releases for Prompt Library yet.
+Prompt Library currently has no published GitHub Releases.
 
-For now, install it by building from source:
+The current way to install it is to build the installer locally.
 
 You need [Rust](https://rustup.rs), [Node.js 18+](https://nodejs.org), and `cargo install tauri-cli`.
 
@@ -60,13 +60,31 @@ Then:
 git clone https://github.com/Leonxlnx/prompt-library.git
 cd prompt-library
 npm install
-cargo tauri dev        # run in dev mode
-cargo tauri build      # build the installer
+npm run dev
+npm run build
 ```
 
-The installer ends up in `src-tauri/target/release/bundle/`.
+Installers are generated here:
 
-Once official GitHub Releases are published, this section will point to them directly.
+```text
+src-tauri/target/release/bundle/
+```
+
+Typical files:
+
+- Windows: `src-tauri/target/release/bundle/nsis/Prompt Library_1.0.0_x64-setup.exe`
+- macOS: `src-tauri/target/release/bundle/dmg/Prompt Library_1.0.0_*.dmg`
+
+### Reinstall or update on Windows
+
+1. Close Prompt Library.
+2. Run `src-tauri/target/release/bundle/nsis/Prompt Library_1.0.0_x64-setup.exe`
+3. Finish the installer.
+4. Open Prompt Library again from the Start menu or:
+
+```text
+C:\Users\<your-user>\AppData\Local\Prompt Library\prompt-library.exe
+```
 
 ---
 
