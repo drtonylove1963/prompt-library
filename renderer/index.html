@@ -23,7 +23,7 @@
       </div>
     </div>
     <div class="titlebar-actions">
-      <button class="settings-btn" id="settingsBtn" title="Settings">
+      <button class="settings-btn" id="settingsBtn" title="Settings" aria-label="Open settings">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
           stroke-linejoin="round" width="16" height="16">
           <circle cx="12" cy="12" r="3" />
@@ -31,7 +31,7 @@
             d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
         </svg>
       </button>
-      <button class="theme-toggle" id="themeToggle" title="Toggle theme">
+      <button class="theme-toggle" id="themeToggle" title="Toggle theme" aria-label="Toggle dark or light theme">
         <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
           stroke-linecap="round" stroke-linejoin="round">
           <circle cx="12" cy="12" r="5" />
@@ -50,17 +50,17 @@
         </svg>
       </button>
       <div class="window-controls">
-        <button class="win-btn win-minimize" id="winMinimize" title="Minimize">
+        <button class="win-btn win-minimize" id="winMinimize" title="Minimize" aria-label="Minimize window">
           <svg viewBox="0 0 12 12">
             <line x1="2" y1="6" x2="10" y2="6" stroke="currentColor" stroke-width="1.2" />
           </svg>
         </button>
-        <button class="win-btn win-maximize" id="winMaximize" title="Maximize">
+        <button class="win-btn win-maximize" id="winMaximize" title="Maximize" aria-label="Maximize window">
           <svg viewBox="0 0 12 12">
             <rect x="2" y="2" width="8" height="8" rx="1" fill="none" stroke="currentColor" stroke-width="1.2" />
           </svg>
         </button>
-        <button class="win-btn win-close" id="winClose" title="Close">
+        <button class="win-btn win-close" id="winClose" title="Close" aria-label="Close window">
           <svg viewBox="0 0 12 12">
             <line x1="2.5" y1="2.5" x2="9.5" y2="9.5" stroke="currentColor" stroke-width="1.2" />
             <line x1="9.5" y1="2.5" x2="2.5" y2="9.5" stroke="currentColor" stroke-width="1.2" />
@@ -78,7 +78,7 @@
     <div class="settings-panel">
       <div class="settings-header">
         <h2>Settings</h2>
-        <button class="settings-close" id="settingsClose">
+        <button class="settings-close" id="settingsClose" aria-label="Close settings">
           <svg viewBox="0 0 12 12" width="12" height="12">
             <line x1="2.5" y1="2.5" x2="9.5" y2="9.5" stroke="currentColor" stroke-width="1.5" />
             <line x1="9.5" y1="2.5" x2="2.5" y2="9.5" stroke="currentColor" stroke-width="1.5" />
@@ -201,14 +201,14 @@
       <div class="sidebar-header">
         <h2 class="sidebar-title">Folders</h2>
         <div class="sidebar-header-actions">
-          <button class="btn-icon" id="addFolderBtn" title="New folder">
+          <button class="btn-icon" id="addFolderBtn" title="New folder" aria-label="Create new folder">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
               stroke-linejoin="round">
               <line x1="12" y1="5" x2="12" y2="19" />
               <line x1="5" y1="12" x2="19" y2="12" />
             </svg>
           </button>
-          <button class="btn-icon sidebar-collapse-btn" id="sidebarCollapseBtn" title="Collapse sidebar">
+          <button class="btn-icon sidebar-collapse-btn" id="sidebarCollapseBtn" title="Collapse sidebar" aria-label="Collapse sidebar">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
               stroke-linejoin="round">
               <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
@@ -227,7 +227,7 @@
     <main class="main-content" id="mainContent">
       <div class="main-header">
         <div class="main-header-left">
-          <button class="btn-icon sidebar-expand-btn" id="sidebarExpandBtn" title="Show sidebar">
+          <button class="btn-icon sidebar-expand-btn" id="sidebarExpandBtn" title="Show sidebar" aria-label="Show sidebar">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
               stroke-linejoin="round">
               <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
@@ -247,7 +247,7 @@
             <input type="text" class="search-input" id="searchInput" placeholder="Search prompts...">
           </div>
           <div class="sort-dropdown" id="sortDropdown">
-            <button class="btn-icon sort-btn" id="sortBtn" title="Sort prompts">
+            <button class="btn-icon sort-btn" id="sortBtn" title="Sort prompts" aria-label="Sort prompts" aria-haspopup="menu">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
                 stroke-linejoin="round">
                 <line x1="4" y1="6" x2="16" y2="6" />
@@ -354,7 +354,7 @@
 
   <!-- ─── Image Lightbox ─── -->
   <div class="lightbox-overlay" id="lightboxOverlay">
-    <button class="lightbox-close" id="lightboxClose">
+    <button class="lightbox-close" id="lightboxClose" aria-label="Close image preview">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
         stroke-linejoin="round">
         <line x1="18" y1="6" x2="6" y2="18" />

@@ -41,9 +41,18 @@
 
 ## Install
 
-Prompt Library currently has no published GitHub Releases.
+### Download a prebuilt installer
 
-The current way to install it is to build the installer locally.
+Grab the latest installer from the [GitHub Releases](https://github.com/Leonxlnx/prompt-library/releases) page:
+
+- **Windows** — `Prompt Library_*_x64-setup.exe` (NSIS, ~5 MB)
+- **macOS** — `Prompt Library_*_universal.dmg` (Universal: Apple silicon + Intel)
+
+> The macOS build is unsigned. On first launch, right-click the app and choose **Open** to bypass Gatekeeper, then confirm.
+
+If no release has been published yet, see "Build from source" below.
+
+### Build from source
 
 You need [Rust](https://rustup.rs), [Node.js 18+](https://nodejs.org), and `cargo install tauri-cli`.
 
@@ -60,8 +69,8 @@ Then:
 git clone https://github.com/Leonxlnx/prompt-library.git
 cd prompt-library
 npm install
-npm run dev
-npm run build
+npm run dev      # run in dev mode
+npm run build    # produce a release installer
 ```
 
 Installers are generated here:
@@ -75,10 +84,21 @@ Typical files:
 - Windows: `src-tauri/target/release/bundle/nsis/Prompt Library_1.0.0_x64-setup.exe`
 - macOS: `src-tauri/target/release/bundle/dmg/Prompt Library_1.0.0_*.dmg`
 
+### Cutting a release
+
+Releases are produced by GitHub Actions (`.github/workflows/release.yml`). To publish a new version:
+
+1. Bump the version in `package.json`, `src-tauri/Cargo.toml`, and `src-tauri/tauri.conf.json`.
+2. Commit and push the version bump.
+3. Tag and push: `git tag v1.0.1 && git push origin v1.0.1`.
+4. The workflow builds Windows + macOS (universal) installers and opens a **draft** release. Edit it, add notes, and publish.
+
+You can also trigger the workflow manually from the Actions tab (`Run workflow` → enter the tag name).
+
 ### Reinstall or update on Windows
 
 1. Close Prompt Library.
-2. Run `src-tauri/target/release/bundle/nsis/Prompt Library_1.0.0_x64-setup.exe`
+2. Run `Prompt Library_<version>_x64-setup.exe`
 3. Finish the installer.
 4. Open Prompt Library again from the Start menu or:
 

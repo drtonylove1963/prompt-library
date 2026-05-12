@@ -2,6 +2,21 @@
    Prompt Library – Application Logic (Tauri v2)
    ═══════════════════════════════════════════════════════════════ */
 
+// ─── Platform Detection ────────────────────────────────────────
+// Tag the document so CSS can render native chrome conventions
+// (traffic-light style buttons on macOS, sharper right-side controls on Windows).
+(function detectPlatform() {
+    const ua = (navigator.userAgent || '').toLowerCase();
+    const platform = (navigator.platform || '').toLowerCase();
+    let p = 'windows';
+    if (ua.includes('mac') || platform.includes('mac') || ua.includes('iphone') || ua.includes('ipad')) {
+        p = 'macos';
+    } else if (ua.includes('linux')) {
+        p = 'linux';
+    }
+    document.documentElement.setAttribute('data-platform', p);
+})();
+
 async function invoke(cmd, args) {
     // Wait for Tauri to be ready (up to 2 seconds)
     for (let i = 0; i < 20; i++) {
