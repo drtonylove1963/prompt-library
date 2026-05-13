@@ -2,6 +2,19 @@
    Quick Save – Compact prompt saver (Tauri v2)
    ═══════════════════════════════════════════════════════════════ */
 
+// ─── Platform Detection ────────────────────────────────────────
+(function detectPlatform() {
+    const ua = (navigator.userAgent || '').toLowerCase();
+    const platform = (navigator.platform || '').toLowerCase();
+    let p = 'windows';
+    if (ua.includes('mac') || platform.includes('mac') || ua.includes('iphone') || ua.includes('ipad')) {
+        p = 'macos';
+    } else if (ua.includes('linux')) {
+        p = 'linux';
+    }
+    document.documentElement.setAttribute('data-platform', p);
+})();
+
 async function invoke(cmd, args) {
     for (let i = 0; i < 20; i++) {
         if (window.__TAURI__ && window.__TAURI__.core) {

@@ -6472,3 +6472,200 @@ Final Settings + Shell Stability
   opacity: 0.5 !important;
   cursor: not-allowed !important;
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   Cross-platform Polish · v1
+   Platform-aware titlebar chrome (macOS traffic lights vs Windows)
+   + responsive guardrails for narrow widths and HiDPI
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Allow absolute positioning of platform chrome inside the titlebar. */
+.titlebar {
+  position: relative;
+}
+
+/* ─── macOS · traffic-light style controls on the LEFT ─── */
+[data-platform="macos"] .titlebar {
+  padding-left: 78px !important;
+  padding-right: 14px !important;
+}
+
+[data-platform="macos"] .window-controls {
+  position: absolute;
+  top: 50%;
+  left: 14px;
+  transform: translateY(-50%);
+  gap: 8px;
+  -webkit-app-region: no-drag;
+  z-index: 5;
+}
+
+[data-platform="macos"] .win-btn {
+  width: 12px !important;
+  height: 12px !important;
+  min-width: 12px !important;
+  border-radius: 50% !important;
+  padding: 0 !important;
+  background: #4f5560 !important;
+  border: 1px solid rgba(0, 0, 0, 0.18) !important;
+  box-shadow: none !important;
+  color: transparent !important;
+  transition: filter 160ms ease, transform 160ms ease;
+}
+
+[data-platform="macos"] .win-btn svg {
+  display: none !important;
+}
+
+[data-platform="macos"] .win-close {
+  background: #ff5f57 !important;
+  border-color: rgba(0, 0, 0, 0.22) !important;
+}
+
+[data-platform="macos"] .win-minimize {
+  background: #febc2e !important;
+  border-color: rgba(0, 0, 0, 0.22) !important;
+}
+
+[data-platform="macos"] .win-maximize {
+  background: #28c840 !important;
+  border-color: rgba(0, 0, 0, 0.22) !important;
+}
+
+[data-platform="macos"] .win-btn:hover {
+  filter: brightness(1.08);
+  transform: none !important;
+  background-color: inherit;
+}
+
+[data-platform="macos"] .win-close:hover {
+  background: #ff6e66 !important;
+}
+
+[data-platform="macos"] .win-btn:active {
+  filter: brightness(0.92);
+  transform: scale(0.94) !important;
+}
+
+/* Soft outer ring so the lights stay visible on light/dark backgrounds */
+[data-platform="macos"] .window-controls::after {
+  content: "";
+  position: absolute;
+  inset: -6px -8px;
+  border-radius: 999px;
+  pointer-events: none;
+}
+
+/* Quicksave window doesn't ship custom controls, so no override needed. */
+
+/* ─── Windows · keep right-side controls, slightly sharper ─── */
+[data-platform="windows"] .titlebar {
+  padding-right: 0 !important;
+}
+
+[data-platform="windows"] .window-controls {
+  margin-left: 6px;
+  gap: 0 !important;
+}
+
+[data-platform="windows"] .win-btn {
+  border-radius: 6px !important;
+  width: 40px !important;
+  height: 34px !important;
+}
+
+[data-platform="windows"] .win-close:hover {
+  background: #e81123 !important;
+  color: #fff !important;
+}
+
+/* ─── Linux fallback: keep right-side controls (same as Windows) ─── */
+[data-platform="linux"] .win-close:hover {
+  background: var(--danger) !important;
+  color: #fff !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Responsive guardrails
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Prevent overflow when the grid's tracked minimum exceeds the column. */
+.prompt-grid {
+  grid-template-columns: repeat(auto-fill, minmax(min(310px, 100%), 1fr)) !important;
+}
+
+/* Narrow window: tighten chrome so action row never wraps awkwardly. */
+@media (max-width: 720px) {
+  .main-header {
+    gap: 8px;
+  }
+
+  .main-header-right {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .search-box {
+    flex: 1 1 100%;
+    min-width: 0;
+  }
+
+  .titlebar-title {
+    max-width: 38vw;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+/* Modal must never spill past viewport on either platform. */
+.modal,
+.modal-overlay .modal {
+  max-width: min(94vw, 720px);
+  max-height: min(92vh, 760px);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Accessibility polish
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Honor users who request reduced motion (Mac/Windows accessibility). */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    transition-delay: 0ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Keyboard focus ring — visible only when navigating via keyboard. */
+:focus-visible {
+  outline: 2px solid var(--accent, #4a90d9);
+  outline-offset: 2px;
+  border-radius: 8px;
+}
+
+/* Don't show focus ring on draggable titlebar regions. */
+.titlebar:focus-visible,
+.titlebar-drag:focus-visible {
+  outline: none;
+}
+
+/* Tighter focus ring on the small traffic-light buttons. */
+[data-platform="macos"] .win-btn:focus-visible {
+  outline-offset: 3px;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   HiDPI / Retina sharpness
+   Inter renders slightly bolder on Mac Retina; counter the bloom.
+   ═══════════════════════════════════════════════════════════════ */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  body {
+    text-rendering: geometricPrecision;
+  }
+}
